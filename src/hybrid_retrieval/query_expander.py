@@ -1,8 +1,3 @@
-"""
-Query Expander - Expands queries with synonyms, related terms, and paraphrases.
-Improves recall by generating multiple query variations.
-"""
-
 import logging
 import re
 from typing import Optional
@@ -11,47 +6,33 @@ logger = logging.getLogger(__name__)
 
 # ML/AI domain synonym dictionary
 ML_SYNONYMS = {
-    "neural network": [
-        "deep learning model",
-        "artificial neural network",
-        "ANN",
-        "DNN",
-    ],
-    "transformer": ["attention-based model", "BERT", "GPT", "encoder-decoder"],
-    "embedding": ["vector representation", "dense vector", "latent representation"],
-    "fine-tuning": ["transfer learning", "domain adaptation", "model adaptation"],
-    "retrieval": ["search", "information retrieval", "document retrieval"],
-    "attention mechanism": [
-        "self-attention",
-        "multi-head attention",
-        "scaled dot-product attention",
-    ],
-    "gradient descent": ["SGD", "optimizer", "backpropagation"],
-    "overfitting": ["regularization", "generalization", "variance"],
-    "accuracy": ["performance", "precision", "recall", "F1"],
-    "language model": ["LLM", "GPT", "BERT", "text generation"],
-    "classification": ["categorization", "labeling", "prediction"],
-    "clustering": ["unsupervised learning", "k-means", "grouping"],
-    "dimensionality reduction": ["PCA", "t-SNE", "UMAP", "compression"],
-    "loss function": ["objective function", "cost function", "training loss"],
-    "hyperparameter": ["learning rate", "batch size", "configuration"],
-    "inference": ["prediction", "forward pass", "deployment"],
-    "training": ["learning", "fitting", "optimization"],
-    "dataset": ["corpus", "data collection", "training data"],
-    "model": ["algorithm", "architecture", "network"],
-    "feature": ["attribute", "input", "variable"],
+    "neural network": ["deep learning model", "artificial neural network"],
+    "transformer": ["attention-based model", "BERT"],
+    "embedding": ["vector representation", "dense vector"],
+    "fine-tuning": ["transfer learning", "domain adaptation"],
+    "retrieval": ["search", "information retrieval"],
+    "attention mechanism": ["self-attention", "multi-head attention"],
+    "gradient descent": ["SGD", "optimizer"],
+    "overfitting": ["regularization", "generalization"],
+    "accuracy": ["performance", "precision"],
+    "language model": ["LLM", "GPT"],
+    "classification": ["categorization", "labeling"],
+    "clustering": ["unsupervised learning", "k-means"],
+    "dimensionality reduction": ["PCA", "t-SNE"],
+    "loss function": ["objective function", "cost function"],
+    "hyperparameter": ["learning rate", "batch size"],
+    "inference": ["prediction", "forward pass"],
+    "training": ["learning", "fitting"],
+    "dataset": ["corpus", "data collection"],
+    "model": ["algorithm", "architecture"],
+    "feature": ["attribute", "input"],
 }
-
 
 class QueryExpander:
     """
-    Expands queries using multiple strategies:
-    1. Synonym expansion (domain-specific ML synonyms)
-    2. Acronym expansion (ML/AI abbreviations)
-    3. Sub-query decomposition (for complex queries)
-    4. LLM-based expansion (if LLM available)
+    Expands queries using domain-specific ML synonyms, acronyms, and decomposition.
     """
-
+    
     ML_ACRONYMS = {
         "NLP": "natural language processing",
         "CV": "computer vision",
@@ -88,6 +69,14 @@ class QueryExpander:
         self.use_decomposition = use_decomposition
         self.max_expansions = max_expansions
 
+    def expand_for_hybrid(self, query: str) -> dict:
+        """Generate query variants for hybrid retrieval."""
+        expanded = self.expand(query)
+        return {
+            "dense": expanded,
+            "sparse": [query],
+        }
+
     def expand(self, query: str) -> list[str]:
         """Generate expanded query variants."""
         expansions = [query]
@@ -105,6 +94,7 @@ class QueryExpander:
             sub_queries = self._decompose_query(query)
             expansions.extend(sub_queries)
 
+        # Deduplicate while preserving order
         seen = set()
         unique = []
         for q in expansions:
@@ -112,15 +102,18 @@ class QueryExpander:
             if q_lower not in seen and q_lower:
                 seen.add(q_lower)
                 unique.append(q)
-
         return unique
 
     def _expand_acronyms(self, query: str) -> str:
+        """Replaces acronyms with 'ACRONYM (full form)' format."""
         result = query
-        for acronym, expansion in self.ML_ACRONYMS.items():
-            pattern = rf"\b{re.escape(acronym)}\b"
+        for acr, full in self.ML_ACRONYMS.items():
+            pattern = rf"\b{re.escape(acr)}\b"
             result = re.sub(
-                pattern, f"{acronym} ({expansion})", result, flags=re.IGNORECASE
+                pattern, 
+                f"{acr} ({full})", 
+                result, 
+                flags=re.IGNORECASE
             )
         return result
 
@@ -130,9 +123,7 @@ class QueryExpander:
         for term, synonyms in ML_SYNONYMS.items():
             if term in query_lower:
                 for syn in synonyms[:2]:
-                    expanded = re.sub(
-                        re.escape(term), syn, query_lower, flags=re.IGNORECASE
-                    )
+                    expanded = re.sub(re.escape(term), syn, query_lower, flags=re.IGNORECASE)
                     if expanded != query_lower:
                         expansions.append(expanded)
         return expansions
@@ -147,10 +138,8 @@ class QueryExpander:
                     sub_queries.append(part)
         return sub_queries
 
-
 class QueryRewriter:
     """LLM-based query rewriting."""
-
     REWRITE_PROMPT = """You are a search query optimizer for machine learning documentation.
 Given the user query, generate {n} alternative search queries that:
 1. Preserve the original intent
@@ -182,6 +171,5 @@ Return ONLY the alternative queries, one per line, no numbering or explanation."
     def _llm_rewrite(self, query: str) -> list[str]:
         prompt = self.REWRITE_PROMPT.format(query=query, n=self.n_rewrites)
         response = self.llm_service.generate(prompt, max_tokens=200, temperature=0.3)
-        # Fixed E741 by renaming 'l' to 'line'
         lines = [line.strip() for line in response.split("\n") if line.strip()]
         return [query] + lines[: self.n_rewrites]
