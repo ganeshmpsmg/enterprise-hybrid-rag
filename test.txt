@@ -1,3 +1,0 @@
-Artificial Intelligence is a branch of computer science. 
-Machine Learning is a subset of AI. 
-Deep Learning uses neural networks. 
