@@ -2,7 +2,6 @@
 Ingestion Service - Orchestrates full document ingestion pipeline.
 From raw bytes to indexed chunks.
 """
-import io
 import logging
 import tempfile
 from pathlib import Path
@@ -56,7 +55,6 @@ class IngestionService:
         """
         Ingest document from raw bytes.
         """
-        import hashlib
 
         # Save to temp file for loaders that need file path
         ext = Path(filename).suffix

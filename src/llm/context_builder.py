@@ -3,7 +3,6 @@ Context Builder - Assembles and ranks context for LLM answer generation.
 Deduplicates, trims, and orders retrieved chunks optimally.
 """
 import logging
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

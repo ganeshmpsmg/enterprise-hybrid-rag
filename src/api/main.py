@@ -2,20 +2,22 @@
 FastAPI Application Entry Point - Enterprise Hybrid RAG System.
 Handles startup, dependency wiring, and application lifecycle.
 """
-from dotenv import load_dotenv
-load_dotenv()
 import logging
 import os
 import time
 from contextlib import asynccontextmanager
 
+from dotenv import load_dotenv
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+
+
 from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
 from src.api.routes import router
 import src.api.routes as route_module
+load_dotenv()
 
 logger = logging.getLogger(__name__)
 

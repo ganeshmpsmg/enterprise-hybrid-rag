@@ -11,7 +11,6 @@ between query and document tokens (vs independent encoding in bi-encoders).
 import logging
 import time
 from typing import Optional
-import numpy as np
 
 logger = logging.getLogger(__name__)
 

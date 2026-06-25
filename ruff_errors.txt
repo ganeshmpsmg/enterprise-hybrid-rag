@@ -1,0 +1,852 @@
+E402 Module level import not at top of file
+  --> src\api\main.py:10:1
+   |
+ 8 | import time
+ 9 | load_dotenv()
+10 | from contextlib import asynccontextmanager
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+11 |
+12 | from fastapi import FastAPI, Request
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:12:1
+   |
+10 | from contextlib import asynccontextmanager
+11 |
+12 | from fastapi import FastAPI, Request
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+13 | from fastapi.middleware.cors import CORSMiddleware
+14 | from fastapi.responses import JSONResponse
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:13:1
+   |
+12 | from fastapi import FastAPI, Request
+13 | from fastapi.middleware.cors import CORSMiddleware
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 | from fastapi.responses import JSONResponse
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:14:1
+   |
+12 | from fastapi import FastAPI, Request
+13 | from fastapi.middleware.cors import CORSMiddleware
+14 | from fastapi.responses import JSONResponse
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+15 |
+16 | from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:16:1
+   |
+14 | from fastapi.responses import JSONResponse
+15 |
+16 | from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 | from src.api.routes import router
+18 | import src.api.routes as route_module
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:17:1
+   |
+16 | from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+17 | from src.api.routes import router
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+18 | import src.api.routes as route_module
+   |
+
+E402 Module level import not at top of file
+  --> src\api\main.py:18:1
+   |
+16 | from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
+17 | from src.api.routes import router
+18 | import src.api.routes as route_module
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+19 |
+20 | logger = logging.getLogger(__name__)
+   |
+
+F401 [*] `fastapi.middleware.cors.CORSMiddleware` imported but unused
+  --> src\api\middleware.py:10:37
+   |
+ 9 | from fastapi import Request, Response
+10 | from fastapi.middleware.cors import CORSMiddleware
+   |                                     ^^^^^^^^^^^^^^
+11 | from starlette.middleware.base import BaseHTTPMiddleware
+   |
+help: Remove unused import: `fastapi.middleware.cors.CORSMiddleware`
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:9:1
+   |
+ 7 | print(__file__)
+ 8 | print("=" * 50)
+ 9 | import io
+   | ^^^^^^^^^
+10 | import logging
+11 | import time
+   |
+
+F401 [*] `io` imported but unused
+  --> src\api\routes.py:9:8
+   |
+ 7 | print(__file__)
+ 8 | print("=" * 50)
+ 9 | import io
+   |        ^^
+10 | import logging
+11 | import time
+   |
+help: Remove unused import: `io`
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:10:1
+   |
+ 8 | print("=" * 50)
+ 9 | import io
+10 | import logging
+   | ^^^^^^^^^^^^^^
+11 | import time
+12 | from pathlib import Path
+   |
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:11:1
+   |
+ 9 | import io
+10 | import logging
+11 | import time
+   | ^^^^^^^^^^^
+12 | from pathlib import Path
+13 | from typing import Optional
+   |
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:12:1
+   |
+10 | import logging
+11 | import time
+12 | from pathlib import Path
+   | ^^^^^^^^^^^^^^^^^^^^^^^^
+13 | from typing import Optional
+   |
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:13:1
+   |
+11 | import time
+12 | from pathlib import Path
+13 | from typing import Optional
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   |
+
+F401 [*] `typing.Optional` imported but unused
+  --> src\api\routes.py:13:20
+   |
+11 | import time
+12 | from pathlib import Path
+13 | from typing import Optional
+   |                    ^^^^^^^^
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   |
+help: Remove unused import: `typing.Optional`
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:15:1
+   |
+13 | from typing import Optional
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+16 | from fastapi.responses import JSONResponse
+   |
+
+F401 [*] `fastapi.Depends` imported but unused
+  --> src\api\routes.py:15:32
+   |
+13 | from typing import Optional
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   |                                ^^^^^^^
+16 | from fastapi.responses import JSONResponse
+   |
+help: Remove unused import
+
+F401 [*] `fastapi.Form` imported but unused
+  --> src\api\routes.py:15:47
+   |
+13 | from typing import Optional
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   |                                               ^^^^
+16 | from fastapi.responses import JSONResponse
+   |
+help: Remove unused import
+
+F401 [*] `fastapi.Query` imported but unused
+  --> src\api\routes.py:15:68
+   |
+13 | from typing import Optional
+14 |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+   |                                                                    ^^^^^
+16 | from fastapi.responses import JSONResponse
+   |
+help: Remove unused import
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:16:1
+   |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+16 | from fastapi.responses import JSONResponse
+   | ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+17 |
+18 | from src.api.schemas import (
+   |
+
+F401 [*] `fastapi.responses.JSONResponse` imported but unused
+  --> src\api\routes.py:16:31
+   |
+15 | from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
+16 | from fastapi.responses import JSONResponse
+   |                               ^^^^^^^^^^^^
+17 |
+18 | from src.api.schemas import (
+   |
+help: Remove unused import: `fastapi.responses.JSONResponse`
+
+E402 Module level import not at top of file
+  --> src\api\routes.py:18:1
+   |
+16 |   from fastapi.responses import JSONResponse
+17 |
+18 | / from src.api.schemas import (
+19 | |     AskRequest, AskResponse, ChunkResult, Citation,
+20 | |     ErrorResponse, HealthResponse, RetrieveRequest,
+21 | |     SearchRequest, SearchResponse, UploadResponse,
+22 | | )
+   | |_^
+23 |
+24 |   logger = logging.getLogger(__name__)
+   |
+
+F401 [*] `src.api.schemas.ErrorResponse` imported but unused
+  --> src\api\routes.py:20:5
+   |
+18 | from src.api.schemas import (
+19 |     AskRequest, AskResponse, ChunkResult, Citation,
+20 |     ErrorResponse, HealthResponse, RetrieveRequest,
+   |     ^^^^^^^^^^^^^
+21 |     SearchRequest, SearchResponse, UploadResponse,
+22 | )
+   |
+help: Remove unused import
+
+F401 [*] `src.api.schemas.RetrieveRequest` imported but unused
+  --> src\api\routes.py:20:36
+   |
+18 | from src.api.schemas import (
+19 |     AskRequest, AskResponse, ChunkResult, Citation,
+20 |     ErrorResponse, HealthResponse, RetrieveRequest,
+   |                                    ^^^^^^^^^^^^^^^
+21 |     SearchRequest, SearchResponse, UploadResponse,
+22 | )
+   |
+help: Remove unused import
+
+F401 [*] `uuid` imported but unused
+  --> src\chunking\chunker.py:9:8
+   |
+ 7 | from dataclasses import dataclass, field
+ 8 | from typing import Optional
+ 9 | import uuid
+   |        ^^^^
+10 |
+11 | logger = logging.getLogger(__name__)
+   |
+help: Remove unused import: `uuid`
+
+F401 [*] `numpy` imported but unused
+  --> src\dense_retrieval\dense_retriever.py:8:17
+   |
+ 6 | import time
+ 7 | from typing import Optional
+ 8 | import numpy as np
+   |                 ^^
+ 9 |
+10 | from src.embeddings.embedding_pipeline import EmbeddingPipeline
+   |
+help: Remove unused import: `numpy`
+
+F401 [*] `src.dense_retrieval.semantic_search.SemanticSearch` imported but unused
+ --> src\dense_retrieval\retrieval_engine.py:8:49
+  |
+7 | from src.dense_retrieval.dense_retriever import DenseRetriever
+8 | from src.dense_retrieval.semantic_search import SemanticSearch
+  |                                                 ^^^^^^^^^^^^^^
+9 | from src.vectorstore.vector_store import SearchResult
+  |
+help: Remove unused import: `src.dense_retrieval.semantic_search.SemanticSearch`
+
+F401 [*] `os` imported but unused
+ --> src\embeddings\embedding_model.py:7:8
+  |
+5 | import hashlib
+6 | import logging
+7 | import os
+  |        ^^
+8 | import time
+9 | from typing import Optional
+  |
+help: Remove unused import: `os`
+
+F401 [*] `typing.Optional` imported but unused
+ --> src\embeddings\embedding_utils.py:6:20
+  |
+4 | """
+5 | import logging
+6 | from typing import Optional
+  |                    ^^^^^^^^
+7 | import numpy as np
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 `ragas` imported but unused; consider using `importlib.util.find_spec` to test for availability
+   --> src\evaluation\ragas_evaluation.py:152:20
+    |
+150 |         """Check if RAGAS is available."""
+151 |         try:
+152 |             import ragas
+    |                    ^^^^^
+153 |             return True
+154 |         except ImportError:
+    |
+help: Remove unused import: `ragas`
+
+E741 Ambiguous variable name: `l`
+   --> src\hybrid_retrieval\query_expander.py:226:32
+    |
+224 |         prompt = self.REWRITE_PROMPT.format(query=query, n=self.n_rewrites)
+225 |         response = self.llm_service.generate(prompt, max_tokens=200, temperature=0.3)
+226 |         lines = [l.strip() for l in response.split("\n") if l.strip()]
+    |                                ^
+227 |         # Include original
+228 |         all_queries = [query] + lines[:self.n_rewrites]
+    |
+
+F401 [*] `typing.Optional` imported but unused
+ --> src\hybrid_retrieval\score_fusion.py:6:20
+  |
+4 | import logging
+5 | from collections import defaultdict
+6 | from typing import Optional
+  |                    ^^^^^^^^
+7 | import numpy as np
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `mimetypes` imported but unused
+ --> src\ingestion\document_loader.py:6:8
+  |
+4 | """
+5 | import logging
+6 | import mimetypes
+  |        ^^^^^^^^^
+7 | from dataclasses import dataclass, field
+8 | from pathlib import Path
+  |
+help: Remove unused import: `mimetypes`
+
+F401 [*] `shutil` imported but unused
+ --> src\ingestion\file_manager.py:7:8
+  |
+5 | import hashlib
+6 | import logging
+7 | import shutil
+  |        ^^^^^^
+8 | import uuid
+9 | from datetime import datetime
+  |
+help: Remove unused import: `shutil`
+
+F401 [*] `typing.Optional` imported but unused
+ --> src\llm\context_builder.py:6:20
+  |
+4 | """
+5 | import logging
+6 | from typing import Optional
+  |                    ^^^^^^^^
+7 |
+8 | logger = logging.getLogger(__name__)
+  |
+help: Remove unused import: `typing.Optional`
+
+F541 [*] f-string without any placeholders
+   --> src\llm\rag_pipeline.py:192:20
+    |
+190 |         return RAGResponse(
+191 |             query=query,
+192 |             answer=f"An error occurred while processing your query. Please try again.",
+    |                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+193 |             citations=[],
+194 |             context_chunks_used=0,
+    |
+help: Remove extraneous `f` prefix
+
+F401 [*] `os` imported but unused
+ --> src\monitoring\logging_config.py:6:8
+  |
+4 | import logging
+5 | import logging.config
+6 | import os
+  |        ^^
+7 | import sys
+8 | from typing import Optional
+  |
+help: Remove unused import: `os`
+
+F401 [*] `time` imported but unused
+ --> src\monitoring\prometheus_metrics.py:5:8
+  |
+3 | """
+4 | import logging
+5 | import time
+  |        ^^^^
+6 | from functools import wraps
+7 | from typing import Callable, Optional
+  |
+help: Remove unused import: `time`
+
+F401 [*] `functools.wraps` imported but unused
+ --> src\monitoring\prometheus_metrics.py:6:23
+  |
+4 | import logging
+5 | import time
+6 | from functools import wraps
+  |                       ^^^^^
+7 | from typing import Callable, Optional
+  |
+help: Remove unused import: `functools.wraps`
+
+F401 [*] `typing.Callable` imported but unused
+ --> src\monitoring\prometheus_metrics.py:7:20
+  |
+5 | import time
+6 | from functools import wraps
+7 | from typing import Callable, Optional
+  |                    ^^^^^^^^
+8 |
+9 | logger = logging.getLogger(__name__)
+  |
+help: Remove unused import
+
+F401 [*] `typing.Optional` imported but unused
+ --> src\monitoring\prometheus_metrics.py:7:30
+  |
+5 | import time
+6 | from functools import wraps
+7 | from typing import Callable, Optional
+  |                              ^^^^^^^^
+8 |
+9 | logger = logging.getLogger(__name__)
+  |
+help: Remove unused import
+
+F401 `prometheus_client.Summary` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> src\monitoring\prometheus_metrics.py:14:36
+   |
+12 | try:
+13 |     from prometheus_client import (
+14 |         Counter, Gauge, Histogram, Summary,
+   |                                    ^^^^^^^
+15 |         REGISTRY, generate_latest, CONTENT_TYPE_LATEST
+16 |     )
+   |
+help: Remove unused import: `prometheus_client.Summary`
+
+E741 Ambiguous variable name: `l`
+   --> src\preprocessing\metadata_extractor.py:204:32
+    |
+202 |     def _extract_title(self, text: str) -> Optional[str]:
+203 |         """Extract title from first few lines heuristically."""
+204 |         lines = [l.strip() for l in text.split("\n") if l.strip()]
+    |                                ^
+205 |         # Title is usually the first non-short line that isn't all caps
+206 |         for line in lines[:10]:
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:289:33
+    |
+287 |         """Heuristic content quality assessment."""
+288 |         score = 0
+289 |         if meta.word_count > 500: score += 2
+    |                                 ^
+290 |         if meta.word_count > 2000: score += 2
+291 |         if meta.has_abstract: score += 2
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:290:34
+    |
+288 |         score = 0
+289 |         if meta.word_count > 500: score += 2
+290 |         if meta.word_count > 2000: score += 2
+    |                                  ^
+291 |         if meta.has_abstract: score += 2
+292 |         if meta.has_references: score += 1
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:291:29
+    |
+289 |         if meta.word_count > 500: score += 2
+290 |         if meta.word_count > 2000: score += 2
+291 |         if meta.has_abstract: score += 2
+    |                             ^
+292 |         if meta.has_references: score += 1
+293 |         if meta.title: score += 1
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:292:31
+    |
+290 |         if meta.word_count > 2000: score += 2
+291 |         if meta.has_abstract: score += 2
+292 |         if meta.has_references: score += 1
+    |                               ^
+293 |         if meta.title: score += 1
+294 |         if len(meta.topics) > 0: score += 1
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:293:22
+    |
+291 |         if meta.has_abstract: score += 2
+292 |         if meta.has_references: score += 1
+293 |         if meta.title: score += 1
+    |                      ^
+294 |         if len(meta.topics) > 0: score += 1
+295 |         if meta.section_count > 3: score += 1
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:294:32
+    |
+292 |         if meta.has_references: score += 1
+293 |         if meta.title: score += 1
+294 |         if len(meta.topics) > 0: score += 1
+    |                                ^
+295 |         if meta.section_count > 3: score += 1
+296 |         if score >= 7: return "high"
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:295:34
+    |
+293 |         if meta.title: score += 1
+294 |         if len(meta.topics) > 0: score += 1
+295 |         if meta.section_count > 3: score += 1
+    |                                  ^
+296 |         if score >= 7: return "high"
+297 |         if score >= 4: return "medium"
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:296:22
+    |
+294 |         if len(meta.topics) > 0: score += 1
+295 |         if meta.section_count > 3: score += 1
+296 |         if score >= 7: return "high"
+    |                      ^
+297 |         if score >= 4: return "medium"
+298 |         return "low"
+    |
+
+E701 Multiple statements on one line (colon)
+   --> src\preprocessing\metadata_extractor.py:297:22
+    |
+295 |         if meta.section_count > 3: score += 1
+296 |         if score >= 7: return "high"
+297 |         if score >= 4: return "medium"
+    |                      ^
+298 |         return "low"
+    |
+
+F401 [*] `typing.Optional` imported but unused
+ --> src\preprocessing\normalizer.py:7:20
+  |
+5 | import logging
+6 | import re
+7 | from typing import Optional
+  |                    ^^^^^^^^
+8 |
+9 | logger = logging.getLogger(__name__)
+  |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `typing.Optional` imported but unused
+  --> src\preprocessing\text_cleaner.py:9:20
+   |
+ 7 | import unicodedata
+ 8 | from dataclasses import dataclass
+ 9 | from typing import Optional
+   |                    ^^^^^^^^
+10 |
+11 | logger = logging.getLogger(__name__)
+   |
+help: Remove unused import: `typing.Optional`
+
+F401 [*] `numpy` imported but unused
+  --> src\reranker\cross_encoder.py:14:17
+   |
+12 | import time
+13 | from typing import Optional
+14 | import numpy as np
+   |                 ^^
+15 |
+16 | logger = logging.getLogger(__name__)
+   |
+help: Remove unused import: `numpy`
+
+F401 [*] `io` imported but unused
+ --> src\utils\ingestion_service.py:5:8
+  |
+3 | From raw bytes to indexed chunks.
+4 | """
+5 | import io
+  |        ^^
+6 | import logging
+7 | import tempfile
+  |
+help: Remove unused import: `io`
+
+F401 [*] `hashlib` imported but unused
+  --> src\utils\ingestion_service.py:59:16
+   |
+57 |         Ingest document from raw bytes.
+58 |         """
+59 |         import hashlib
+   |                ^^^^^^^
+60 |
+61 |         # Save to temp file for loaders that need file path
+   |
+help: Remove unused import: `hashlib`
+
+F401 [*] `json` imported but unused
+ --> src\vectorstore\faiss_manager.py:5:8
+  |
+3 | Best for: high-throughput, in-memory similarity search on CPU/GPU.
+4 | """
+5 | import json
+  |        ^^^^
+6 | import logging
+7 | import os
+  |
+help: Remove unused import: `json`
+
+F401 [*] `faiss` imported but unused
+   --> src\vectorstore\faiss_manager.py:255:16
+    |
+253 |     def _rebuild_from_indices(self, keep_indices: list[int]):
+254 |         """Rebuild index keeping only specified indices."""
+255 |         import faiss
+    |                ^^^^^
+256 |         if not keep_indices:
+257 |             self._index = None
+    |
+help: Remove unused import: `faiss`
+
+F401 `qdrant_client.models.Distance` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> src\vectorstore\qdrant_manager.py:61:46
+   |
+59 |         try:
+60 |             from qdrant_client import QdrantClient
+61 |             from qdrant_client.models import Distance, VectorParams
+   |                                              ^^^^^^^^
+62 |         except ImportError:
+63 |             raise ImportError("qdrant-client not installed. Run: pip install qdrant-client")
+   |
+help: Remove unused import
+
+F401 `qdrant_client.models.VectorParams` imported but unused; consider using `importlib.util.find_spec` to test for availability
+  --> src\vectorstore\qdrant_manager.py:61:56
+   |
+59 |         try:
+60 |             from qdrant_client import QdrantClient
+61 |             from qdrant_client.models import Distance, VectorParams
+   |                                                        ^^^^^^^^^^^^
+62 |         except ImportError:
+63 |             raise ImportError("qdrant-client not installed. Run: pip install qdrant-client")
+   |
+help: Remove unused import
+
+F841 Local variable `mock_load` is assigned to but never used
+  --> tests\unit\test_embeddings.py:13:84
+   |
+11 |     def mock_model(self):
+12 |         """Mock SentenceTransformer."""
+13 |         with patch("src.embeddings.embedding_model.EmbeddingModel._load_model") as mock_load:
+   |                                                                                    ^^^^^^^^^
+14 |             from src.embeddings.embedding_model import EmbeddingModel
+15 |             model = EmbeddingModel(model_name="test-model", device="cpu")
+   |
+help: Remove assignment to unused variable `mock_load`
+
+F401 [*] `hashlib` imported but unused
+ --> tests\unit\test_ingestion.py:2:8
+  |
+1 | """Tests for document ingestion pipeline."""
+2 | import hashlib
+  |        ^^^^^^^
+3 | import io
+4 | import tempfile
+  |
+help: Remove unused import: `hashlib`
+
+F401 [*] `io` imported but unused
+ --> tests\unit\test_ingestion.py:3:8
+  |
+1 | """Tests for document ingestion pipeline."""
+2 | import hashlib
+3 | import io
+  |        ^^
+4 | import tempfile
+5 | from pathlib import Path
+  |
+help: Remove unused import: `io`
+
+F401 [*] `tempfile` imported but unused
+ --> tests\unit\test_ingestion.py:4:8
+  |
+2 | import hashlib
+3 | import io
+4 | import tempfile
+  |        ^^^^^^^^
+5 | from pathlib import Path
+6 | import pytest
+  |
+help: Remove unused import: `tempfile`
+
+F401 [*] `pathlib.Path` imported but unused
+ --> tests\unit\test_ingestion.py:5:21
+  |
+3 | import io
+4 | import tempfile
+5 | from pathlib import Path
+  |                     ^^^^
+6 | import pytest
+7 | from unittest.mock import MagicMock, patch
+  |
+help: Remove unused import: `pathlib.Path`
+
+F401 [*] `unittest.mock.MagicMock` imported but unused
+ --> tests\unit\test_ingestion.py:7:27
+  |
+5 | from pathlib import Path
+6 | import pytest
+7 | from unittest.mock import MagicMock, patch
+  |                           ^^^^^^^^^
+8 |
+9 | from src.ingestion.data_validator import DocumentValidator
+  |
+help: Remove unused import
+
+F401 [*] `unittest.mock.patch` imported but unused
+ --> tests\unit\test_ingestion.py:7:38
+  |
+5 | from pathlib import Path
+6 | import pytest
+7 | from unittest.mock import MagicMock, patch
+  |                                      ^^^^^
+8 |
+9 | from src.ingestion.data_validator import DocumentValidator
+  |
+help: Remove unused import
+
+F841 Local variable `text` is assigned to but never used
+   --> tests\unit\test_ingestion.py:174:9
+    |
+172 |     def test_number_normalization(self):
+173 |         norm = TextNormalizer(normalize_numbers=True)
+174 |         text = "trained on 1,000,000 examples"
+    |         ^^^^
+175 |         result = norm.normalize("trained on 1,000,000 examples")
+176 |         assert "1000000" in result or "1,000,000" not in result
+    |
+help: Remove assignment to unused variable `text`
+
+F401 [*] `pytest` imported but unused
+ --> tests\unit\test_rag.py:2:8
+  |
+1 | """Tests for RAG pipeline components."""
+2 | import pytest
+  |        ^^^^^^
+3 | from unittest.mock import MagicMock, patch
+4 | import numpy as np
+  |
+help: Remove unused import: `pytest`
+
+F401 [*] `unittest.mock.MagicMock` imported but unused
+ --> tests\unit\test_rag.py:3:27
+  |
+1 | """Tests for RAG pipeline components."""
+2 | import pytest
+3 | from unittest.mock import MagicMock, patch
+  |                           ^^^^^^^^^
+4 | import numpy as np
+  |
+help: Remove unused import
+
+F401 [*] `unittest.mock.patch` imported but unused
+ --> tests\unit\test_rag.py:3:38
+  |
+1 | """Tests for RAG pipeline components."""
+2 | import pytest
+3 | from unittest.mock import MagicMock, patch
+  |                                      ^^^^^
+4 | import numpy as np
+  |
+help: Remove unused import
+
+F401 [*] `numpy` imported but unused
+ --> tests\unit\test_rag.py:4:17
+  |
+2 | import pytest
+3 | from unittest.mock import MagicMock, patch
+4 | import numpy as np
+  |                 ^^
+  |
+help: Remove unused import: `numpy`
+
+F401 [*] `numpy` imported but unused
+ --> tests\unit\test_retrieval.py:2:17
+  |
+1 | """Tests for retrieval components: BM25, Dense, Hybrid, RRF."""
+2 | import numpy as np
+  |                 ^^
+3 | import pytest
+4 | from unittest.mock import MagicMock
+  |
+help: Remove unused import: `numpy`
+
+F401 [*] `unittest.mock.MagicMock` imported but unused
+ --> tests\unit\test_retrieval.py:4:27
+  |
+2 | import numpy as np
+3 | import pytest
+4 | from unittest.mock import MagicMock
+  |                           ^^^^^^^^^
+  |
+help: Remove unused import: `unittest.mock.MagicMock`
+
+Found 75 errors.
+[*] 43 fixable with the `--fix` option (2 hidden fixes can be enabled with the `--unsafe-fixes` option).

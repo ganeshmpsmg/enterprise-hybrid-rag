@@ -1,7 +1,4 @@
 """Tests for RAG pipeline components."""
-import pytest
-from unittest.mock import MagicMock, patch
-import numpy as np
 
 
 class TestPromptBuilder:

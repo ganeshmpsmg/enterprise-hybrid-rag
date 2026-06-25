@@ -1,6 +1,6 @@
 """Tests for embedding model and pipeline."""
 import numpy as np
-import pytest
+import pytest                                                        
 from unittest.mock import MagicMock, patch
 
 
@@ -10,7 +10,7 @@ class TestEmbeddingModel:
     @pytest.fixture
     def mock_model(self):
         """Mock SentenceTransformer."""
-        with patch("src.embeddings.embedding_model.EmbeddingModel._load_model") as mock_load:
+        with patch("src.embeddings.embedding_model.EmbeddingModel._load_model"):
             from src.embeddings.embedding_model import EmbeddingModel
             model = EmbeddingModel(model_name="test-model", device="cpu")
             # Mock the internal _model

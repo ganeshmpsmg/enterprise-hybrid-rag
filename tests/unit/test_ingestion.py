@@ -1,10 +1,5 @@
 """Tests for document ingestion pipeline."""
-import hashlib
-import io
-import tempfile
-from pathlib import Path
 import pytest
-from unittest.mock import MagicMock, patch
 
 from src.ingestion.data_validator import DocumentValidator
 from src.ingestion.file_manager import FileManager
@@ -171,6 +166,5 @@ class TestTextNormalizer:
 
     def test_number_normalization(self):
         norm = TextNormalizer(normalize_numbers=True)
-        text = "trained on 1,000,000 examples"
         result = norm.normalize("trained on 1,000,000 examples")
         assert "1000000" in result or "1,000,000" not in result

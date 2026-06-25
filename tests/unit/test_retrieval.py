@@ -1,7 +1,5 @@
 """Tests for retrieval components: BM25, Dense, Hybrid, RRF."""
-import numpy as np
 import pytest
-from unittest.mock import MagicMock
 
 
 # ── BM25 Tests ──────────────────────────────────────────────

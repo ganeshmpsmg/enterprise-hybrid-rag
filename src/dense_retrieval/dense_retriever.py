@@ -5,7 +5,6 @@ Finds documents semantically similar to the query even without exact term matche
 import logging
 import time
 from typing import Optional
-import numpy as np
 
 from src.embeddings.embedding_pipeline import EmbeddingPipeline
 from src.vectorstore.vector_store import VectorStore, SearchResult

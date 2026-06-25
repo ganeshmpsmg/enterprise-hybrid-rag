@@ -7,7 +7,6 @@ import uuid
 from typing import Callable
 
 from fastapi import Request, Response
-from fastapi.middleware.cors import CORSMiddleware
 from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)

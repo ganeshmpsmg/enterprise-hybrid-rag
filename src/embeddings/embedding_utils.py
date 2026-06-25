@@ -3,7 +3,6 @@ Embedding Utilities - Helper functions for embedding operations.
 Cosine similarity, normalization, dimensionality reduction, etc.
 """
 import logging
-from typing import Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)

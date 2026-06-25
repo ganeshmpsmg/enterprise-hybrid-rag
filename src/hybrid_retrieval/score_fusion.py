@@ -3,7 +3,6 @@ Score Fusion Utilities - Additional fusion strategies and score normalization.
 """
 import logging
 from collections import defaultdict
-from typing import Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)

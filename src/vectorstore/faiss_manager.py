@@ -2,7 +2,6 @@
 FAISS Manager - Facebook AI Similarity Search vector store backend.
 Best for: high-throughput, in-memory similarity search on CPU/GPU.
 """
-import json
 import logging
 import os
 import pickle
@@ -252,7 +251,6 @@ class FAISSManager(VectorStore):
 
     def _rebuild_from_indices(self, keep_indices: list[int]):
         """Rebuild index keeping only specified indices."""
-        import faiss
         if not keep_indices:
             self._index = None
             self._chunk_ids = []

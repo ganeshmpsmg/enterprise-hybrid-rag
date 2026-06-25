@@ -189,7 +189,7 @@ class RAGPipeline:
     def _empty_response(self, query: str, error: str) -> RAGResponse:
         return RAGResponse(
             query=query,
-            answer=f"An error occurred while processing your query. Please try again.",
+            answer="An error occurred while processing your query. Please try again.",
             citations=[],
             context_chunks_used=0,
             pipeline_metadata={"error": error},

@@ -6,7 +6,6 @@ import logging
 import re
 import unicodedata
 from dataclasses import dataclass
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 

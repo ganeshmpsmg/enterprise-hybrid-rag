@@ -3,6 +3,7 @@ RAGAS Evaluation - Faithfulness, Answer Relevancy, and Context Precision.
 RAGAS (RAG Assessment) is the standard evaluation framework for RAG systems.
 """
 import logging
+import importlib.util
 from dataclasses import dataclass
 from typing import Optional
 
@@ -42,16 +43,6 @@ class RAGASResult:
 class RAGASEvaluator:
     """
     RAGAS-based RAG evaluation.
-
-    Metrics:
-    - Faithfulness: Does the answer only use information from the context?
-      (Checks for hallucination)
-    - Answer Relevancy: Is the answer relevant to the question?
-      (Embedding similarity of question and generated answer)
-    - Context Precision: Are the retrieved contexts relevant?
-      (Precision of retrieved contexts w.r.t. ground truth)
-    - Context Recall: Does the context contain enough information?
-      (Recall of required information in retrieved contexts)
     """
 
     def __init__(self, llm_service=None):
@@ -65,18 +56,7 @@ class RAGASEvaluator:
         contexts: list[list[str]],
         ground_truths: Optional[list[str]] = None,
     ) -> RAGASResult:
-        """
-        Run RAGAS evaluation on a set of QA pairs.
-
-        Args:
-            questions: List of user questions
-            answers: List of generated answers
-            contexts: List of context lists (each question has list of context passages)
-            ground_truths: Optional list of reference answers
-
-        Returns:
-            RAGASResult with all metric scores
-        """
+        """Run RAGAS evaluation on a set of QA pairs."""
         if self._ragas_available:
             return self._run_ragas(questions, answers, contexts, ground_truths)
         else:
@@ -86,6 +66,7 @@ class RAGASEvaluator:
     def _run_ragas(self, questions, answers, contexts, ground_truths) -> RAGASResult:
         """Run official RAGAS evaluation."""
         try:
+            # Local imports here ensure we only depend on RAGAS when necessary
             from ragas import evaluate as ragas_evaluate
             from ragas.metrics import faithfulness, answer_relevancy, context_precision
             from datasets import Dataset
@@ -119,9 +100,8 @@ class RAGASEvaluator:
     def _lightweight_eval(self, questions, answers, contexts) -> RAGASResult:
         """
         Lightweight approximation without RAGAS dependency.
-        Uses embedding similarity for answer relevancy.
-        Faithfulness approximated by context overlap.
         """
+        import numpy as np
         faithfulness_scores = []
         relevancy_scores = []
 
@@ -131,7 +111,7 @@ class RAGASEvaluator:
             answer_words = set(a.lower().split())
             ctx_words = set(ctx_text.split())
             overlap = len(answer_words & ctx_words) / max(len(answer_words), 1)
-            faithfulness_scores.append(min(overlap * 2, 1.0))  # Scale to 0-1
+            faithfulness_scores.append(min(overlap * 2, 1.0))
 
             # Answer relevancy: word overlap between question and answer
             q_words = set(q.lower().split())
@@ -139,7 +119,6 @@ class RAGASEvaluator:
             relevancy = len(q_words & a_words) / max(len(q_words), 1)
             relevancy_scores.append(relevancy)
 
-        import numpy as np
         return RAGASResult(
             faithfulness=round(float(np.mean(faithfulness_scores)), 4),
             answer_relevancy=round(float(np.mean(relevancy_scores)), 4),
@@ -147,9 +126,5 @@ class RAGASEvaluator:
         )
 
     def _check_ragas(self) -> bool:
-        """Check if RAGAS is available."""
-        try:
-            import ragas
-            return True
-        except ImportError:
-            return False
+        """Check if RAGAS is available without importing it at the module level."""
+        return importlib.util.find_spec("ragas") is not None

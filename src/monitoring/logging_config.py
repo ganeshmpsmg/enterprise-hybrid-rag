@@ -3,7 +3,6 @@ Logging Configuration - Structured JSON logging for production.
 """
 import logging
 import logging.config
-import os
 import sys
 from typing import Optional
 

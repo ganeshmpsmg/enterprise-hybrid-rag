@@ -3,7 +3,6 @@ Document Loader - Unified multi-format document loading interface.
 Supports PDF, DOCX, TXT, Markdown with automatic format detection.
 """
 import logging
-import mimetypes
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional

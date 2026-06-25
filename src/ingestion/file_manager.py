@@ -4,7 +4,6 @@ Manages the transition from raw uploads to processed documents.
 """
 import hashlib
 import logging
-import shutil
 import uuid
 from datetime import datetime
 from pathlib import Path

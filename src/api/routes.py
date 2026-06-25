@@ -2,23 +2,16 @@
 API Routes - FastAPI route handlers for all RAG endpoints.
 Implements: /upload, /search, /retrieve, /ask, /health
 """
-print("=" * 50)
-print("ROUTES.PY LOADED")
-print(__file__)
-print("=" * 50)
-import io
+
 import logging
 import time
 from pathlib import Path
-from typing import Optional
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile, status
-from fastapi.responses import JSONResponse
+from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from src.api.schemas import (
     AskRequest, AskResponse, ChunkResult, Citation,
-    ErrorResponse, HealthResponse, RetrieveRequest,
-    SearchRequest, SearchResponse, UploadResponse,
+    HealthResponse, SearchRequest, SearchResponse, UploadResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -85,16 +78,6 @@ async def upload_document(
 ):
     """
     Upload and ingest a document into the RAG system.
-
-    Process:
-    1. Validate file (type, size)
-    2. Extract text and metadata
-    3. Clean and chunk text
-    4. Generate embeddings
-    5. Index in vector store and build BM25 index
-
-    Supported formats: PDF, DOCX, TXT, Markdown
-    Max file size: 50MB
     """
     t0 = time.perf_counter()
 
@@ -144,12 +127,7 @@ async def upload_document(
 # ── Hybrid Search ─────────────────────────────────────────────
 @router.post("/search", response_model=SearchResponse, tags=["Retrieval"])
 async def search(request: SearchRequest):
-    """
-    Hybrid search: dense + sparse + RRF fusion.
-
-    Returns ranked document chunks without LLM generation.
-    Use this endpoint when you want raw retrieval results.
-    """
+    """Hybrid search: dense + sparse + RRF fusion."""
     pipeline = get_pipeline()
     t0 = time.perf_counter()
 
@@ -212,31 +190,10 @@ async def search(request: SearchRequest):
 # ── Ask (Full RAG) ────────────────────────────────────────────
 @router.post("/ask", response_model=AskResponse, tags=["RAG"])
 async def ask(request: AskRequest):
-    print("ASK FUNCTION ENTERED")
-
-    """
-    Full RAG pipeline: retrieval + reranking + LLM answer generation.
-    """
-    
+    """Full RAG pipeline: retrieval + reranking + LLM answer generation."""
     pipeline = get_pipeline()
 
     try:
-        print("\n" + "=" * 60)
-        print("ASK ENDPOINT CALLED")
-        print(
-            "BM25 RETRIEVER ID:",
-            id(pipeline.hybrid_retriever.sparse_retriever)
-        )
-        print(
-            "BM25 EXISTS:",
-            pipeline.hybrid_retriever.sparse_retriever._bm25 is not None
-        )
-        print(
-            "CORPUS SIZE:",
-            len(pipeline.hybrid_retriever.sparse_retriever._corpus)
-        )
-        print("=" * 60 + "\n")
-
         rag_response = pipeline.run(
             query=request.query,
             top_k=request.top_k,
@@ -261,36 +218,11 @@ async def ask(request: AskRequest):
             citations=citations,
             context_chunks_used=rag_response.context_chunks_used,
             total_latency_ms=rag_response.total_latency_ms,
-            model=rag_response.pipeline_metadata.get(
-                "model",
-                "unknown"
-            ),
+            model=rag_response.pipeline_metadata.get("model", "unknown"),
         )
 
     except Exception as e:
-        import traceback
-
-        traceback.print_exc()
-
-        print(
-            "BM25 EXISTS AT ERROR:",
-            pipeline.hybrid_retriever.sparse_retriever._bm25 is not None
-        )
-
-        print(
-            "CORPUS SIZE AT ERROR:",
-            len(
-                pipeline.hybrid_retriever.sparse_retriever._corpus
-            )
-        )
-
-        print("RAG PIPELINE ERROR:", repr(e))
-
-        logger.error(
-            f"Ask failed: {e}",
-            exc_info=True
-        )
-
+        logger.error(f"Ask failed: {e}", exc_info=True)
         raise HTTPException(
             status_code=500,
             detail=f"Answer generation failed: {str(e)}"

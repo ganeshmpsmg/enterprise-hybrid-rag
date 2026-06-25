@@ -5,7 +5,6 @@ import logging
 from typing import Optional
 
 from src.dense_retrieval.dense_retriever import DenseRetriever
-from src.dense_retrieval.semantic_search import SemanticSearch
 from src.vectorstore.vector_store import SearchResult
 
 logger = logging.getLogger(__name__)

@@ -4,7 +4,6 @@ Handles model loading, batching, caching, and device management.
 """
 import hashlib
 import logging
-import os
 import time
 from typing import Optional
 import numpy as np

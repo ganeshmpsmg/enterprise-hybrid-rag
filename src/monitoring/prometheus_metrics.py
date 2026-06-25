@@ -2,16 +2,14 @@
 Prometheus Metrics - Exposes RAG system metrics for Prometheus scraping.
 """
 import logging
-import time
-from functools import wraps
-from typing import Callable, Optional
 
 logger = logging.getLogger(__name__)
 
 # Try importing prometheus_client
 try:
+    # Removed unused 'Summary' import to fix F401 error
     from prometheus_client import (
-        Counter, Gauge, Histogram, Summary,
+        Counter, Gauge, Histogram,
         REGISTRY, generate_latest, CONTENT_TYPE_LATEST
     )
     PROMETHEUS_AVAILABLE = True
@@ -23,17 +21,6 @@ except ImportError:
 class RAGMetrics:
     """
     Prometheus metrics for the RAG system.
-
-    Metrics exposed:
-    - rag_requests_total: Total API requests by endpoint and status
-    - rag_request_duration_seconds: Request latency histogram
-    - rag_documents_total: Total indexed documents
-    - rag_chunks_total: Total indexed chunks
-    - rag_query_latency_seconds: Query pipeline latency by stage
-    - rag_embedding_duration_seconds: Embedding generation latency
-    - rag_reranking_duration_seconds: Reranking latency
-    - rag_llm_tokens_total: Total tokens sent/received to LLM
-    - rag_retrieval_results: Number of results per query
     """
 
     def __init__(self, app_name: str = "enterprise_rag"):
