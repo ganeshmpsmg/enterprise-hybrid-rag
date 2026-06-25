@@ -23,8 +23,7 @@ env:
   REGISTRY: ghcr.io
   IMAGE_NAME: ${{ github.repository }}/enterprise-hybrid-rag
   KUBE_NAMESPACE: rag-system
-
-  jobs:
+jobs:
   # ── Job 1: Lint & Type Check ────────────────────────────────
   lint:
     name: Lint & Type Check
