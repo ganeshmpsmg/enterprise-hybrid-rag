@@ -1,0 +1,98 @@
+# ============================================================
+# Enterprise Hybrid RAG System - Main Configuration
+# ============================================================
+
+app:
+  name: "Enterprise Hybrid RAG"
+  version: "1.0.0"
+  environment: "production"
+  debug: false
+
+api:
+  host: "0.0.0.0"
+  port: 8000
+  workers: 4
+  cors_origins:
+    - "http://localhost:3000"
+    - "http://localhost:8080"
+
+ingestion:
+  upload_dir: "data/raw"
+  processed_dir: "data/processed"
+  max_file_size_mb: 50
+  allowed_extensions:
+    - "pdf"
+    - "txt"
+    - "docx"
+    - "md"
+
+chunking:
+  strategy: "recursive"   # recursive | semantic | fixed
+  chunk_size: 512
+  chunk_overlap: 64
+  separators:
+    - "\n\n"
+    - "\n"
+    - " "
+    - ""
+
+embedding:
+  model: "sentence-transformers/all-MiniLM-L6-v2"
+  dimension: 384
+  batch_size: 64
+  device: "cpu"
+  normalize: true
+
+vector_store:
+  active: "chroma"   # faiss | chroma | qdrant
+  faiss:
+    index_path: "data/embeddings/faiss_index"
+    index_type: "IVFFlat"
+    nlist: 100
+    nprobe: 10
+  chroma:
+    collection_name: "ml_documents"
+    persist_dir: "data/embeddings/chroma_db"
+  qdrant:
+    collection_name: "ml_documents"
+    distance: "Cosine"
+
+retrieval:
+  dense_top_k: 20
+  sparse_top_k: 20
+  hybrid_top_k: 10
+  rerank_top_k: 5
+  rrf_k: 60
+  sparse_weight: 0.4
+  dense_weight: 0.6
+
+reranker:
+  model: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  top_k: 5
+  batch_size: 32
+
+llm:
+  provider: "openai"   # openai | anthropic | ollama
+  openai:
+    model: "gpt-4o-mini"
+    max_tokens: 2048
+    temperature: 0.1
+  ollama:
+    model: "llama3.2"
+    base_url: "http://localhost:11434"
+
+monitoring:
+  enable_metrics: true
+  prometheus_port: 9090
+  log_level: "INFO"
+  log_format: "json"
+
+evaluation:
+  batch_size: 10
+  metrics:
+    - "precision_at_k"
+    - "recall_at_k"
+    - "mrr"
+    - "ndcg"
+    - "faithfulness"
+    - "answer_relevancy"

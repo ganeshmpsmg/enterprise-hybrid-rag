@@ -1,0 +1,63 @@
+# ── RAG API Service ───────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: rag-api-service
+  namespace: rag-system
+  labels:
+    app: rag-api
+spec:
+  selector:
+    app: rag-api
+  ports:
+    - name: http
+      protocol: TCP
+      port: 80
+      targetPort: 8000
+  type: ClusterIP
+---
+# ── Qdrant Service ────────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: qdrant-service
+  namespace: rag-system
+spec:
+  selector:
+    app: qdrant
+  ports:
+    - name: http
+      port: 6333
+      targetPort: 6333
+    - name: grpc
+      port: 6334
+      targetPort: 6334
+  type: ClusterIP
+---
+# ── ChromaDB Service ──────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: chromadb-service
+  namespace: rag-system
+spec:
+  selector:
+    app: chromadb
+  ports:
+    - port: 8000
+      targetPort: 8000
+  type: ClusterIP
+---
+# ── PostgreSQL Service ────────────────────────────────────────
+apiVersion: v1
+kind: Service
+metadata:
+  name: postgres-service
+  namespace: rag-system
+spec:
+  selector:
+    app: postgres
+  ports:
+    - port: 5432
+      targetPort: 5432
+  type: ClusterIP

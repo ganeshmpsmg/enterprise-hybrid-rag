@@ -1,0 +1,106 @@
+# ============================================================
+# Enterprise Hybrid RAG System - Requirements
+# Python 3.12
+# ============================================================
+
+# ── Core Framework ───────────────────────────────────────────
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-multipart==0.0.18
+httpx==0.27.2
+
+# ── LangChain Ecosystem ──────────────────────────────────────
+langchain==0.3.11
+langchain-community==0.3.11
+langchain-openai==0.2.12
+langchain-core==0.3.25
+langchain-text-splitters==0.3.3
+
+# ── LlamaIndex Ecosystem ─────────────────────────────────────
+llama-index==0.12.0
+llama-index-core==0.12.0
+llama-index-embeddings-huggingface==0.4.0
+llama-index-vector-stores-faiss==0.3.0
+
+# ── Embeddings & Transformers ────────────────────────────────
+sentence-transformers==3.3.1
+transformers==4.45.2
+torch==2.5.1
+tokenizers==0.20.3
+accelerate==1.2.1
+
+# ── Vector Databases ─────────────────────────────────────────
+faiss-cpu==1.9.0
+chromadb==0.5.23
+qdrant-client==1.12.1
+
+# ── Sparse Retrieval ─────────────────────────────────────────
+rank-bm25==0.2.2
+scikit-learn==1.6.0
+nltk==3.9.1
+spacy==3.8.3
+
+# ── Document Processing ──────────────────────────────────────
+pypdf==5.1.0
+pdfplumber==0.11.4
+python-docx==1.1.2
+unstructured==0.16.11
+python-magic==0.4.27
+pillow==11.0.0
+
+# ── Database ─────────────────────────────────────────────────
+sqlalchemy==2.0.36
+asyncpg==0.30.0
+psycopg2-binary==2.9.10
+alembic==1.14.0
+
+# ── LLM Providers ────────────────────────────────────────────
+openai==1.57.4
+anthropic==0.40.0
+ollama==0.4.4
+tiktoken==0.8.0
+
+# ── Monitoring & Logging ─────────────────────────────────────
+prometheus-client==0.21.1
+structlog==24.4.0
+python-json-logger==2.0.7
+
+# ── Evaluation ───────────────────────────────────────────────
+ragas==0.2.6
+datasets==3.2.0
+evaluate==0.4.3
+
+# ── Utilities ────────────────────────────────────────────────
+numpy==1.26.4
+pandas==2.2.3
+python-dotenv==1.0.1
+pyyaml==6.0.2
+tenacity==8.5.0
+tqdm==4.67.1
+rich==13.9.4
+click==8.1.8
+aiofiles==24.1.0
+cachetools==5.5.0
+redis==5.2.1
+
+# ── Testing ──────────────────────────────────────────────────
+pytest==8.3.4
+pytest-asyncio==0.24.0
+pytest-cov==6.0.0
+pytest-mock==3.14.0
+httpx==0.27.2
+factory-boy==3.3.1
+
+# ── Development ──────────────────────────────────────────────
+black==24.10.0
+isort==5.13.2
+flake8==7.1.1
+mypy==1.13.0
+pre-commit==4.0.1
+
+# ── Documentation ────────────────────────────────────────────
+mkdocs==1.6.1
+mkdocs-material==9.5.47
+mkdocstrings==0.27.0

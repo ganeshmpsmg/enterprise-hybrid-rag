@@ -1,0 +1,29 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: rag-config
+  namespace: rag-system
+data:
+  APP_ENV: "production"
+  LOG_LEVEL: "INFO"
+  API_HOST: "0.0.0.0"
+  API_PORT: "8000"
+  VECTOR_STORE: "qdrant"
+  QDRANT_HOST: "qdrant-service"
+  QDRANT_PORT: "6333"
+  CHROMA_HOST: "chromadb-service"
+  CHROMA_PORT: "8000"
+  CHROMA_COLLECTION: "ml_documents"
+  EMBEDDING_MODEL: "sentence-transformers/all-MiniLM-L6-v2"
+  RERANKER_MODEL: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+  DENSE_TOP_K: "20"
+  SPARSE_TOP_K: "20"
+  HYBRID_TOP_K: "10"
+  RERANK_TOP_K: "5"
+  RRF_K: "60"
+  LLM_PROVIDER: "openai"
+  OPENAI_MODEL: "gpt-4o-mini"
+  POSTGRES_HOST: "postgres-service"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "ragdb"
+  REDIS_URL: "redis://redis-service:6379/0"

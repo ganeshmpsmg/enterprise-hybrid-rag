@@ -1,0 +1,198 @@
+# ============================================================
+# Enterprise Hybrid RAG System - Docker Compose
+# Services: rag-api, chromadb, qdrant, postgres, redis, prometheus, grafana
+# ============================================================
+version: '3.9'
+
+networks:
+  rag-network:
+    driver: bridge
+
+volumes:
+  chroma_data:
+  qdrant_data:
+  postgres_data:
+  redis_data:
+  prometheus_data:
+  grafana_data:
+  rag_uploads:
+  rag_embeddings:
+
+services:
+
+  # ── RAG API ────────────────────────────────────────────────
+  rag-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: runtime
+    container_name: rag-api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_ENV=production
+      - LOG_LEVEL=INFO
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+      - VECTOR_STORE=chroma
+      - CHROMA_HOST=chromadb
+      - CHROMA_PORT=8001
+      - CHROMA_COLLECTION=ml_documents
+      - CHROMA_PERSIST_DIR=/app/data/embeddings/chroma_db
+      - QDRANT_HOST=qdrant
+      - QDRANT_PORT=6333
+      - POSTGRES_HOST=postgres
+      - POSTGRES_PORT=5432
+      - POSTGRES_DB=${POSTGRES_DB:-ragdb}
+      - POSTGRES_USER=${POSTGRES_USER:-raguser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ragpassword}
+      - REDIS_URL=redis://redis:6379/0
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - LLM_PROVIDER=${LLM_PROVIDER:-openai}
+      - EMBEDDING_MODEL=sentence-transformers/all-MiniLM-L6-v2
+      - RERANKER_MODEL=cross-encoder/ms-marco-MiniLM-L-6-v2
+      - DENSE_TOP_K=20
+      - SPARSE_TOP_K=20
+      - HYBRID_TOP_K=10
+      - RERANK_TOP_K=5
+      - RRF_K=60
+    volumes:
+      - rag_uploads:/app/data/raw
+      - rag_embeddings:/app/data/embeddings
+      - ./logs:/app/logs
+    depends_on:
+      chromadb:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 90s
+
+  # ── ChromaDB ───────────────────────────────────────────────
+  chromadb:
+    image: chromadb/chroma:0.5.23
+    container_name: chromadb
+    restart: unless-stopped
+    ports:
+      - "8001:8000"
+    volumes:
+      - chroma_data:/chroma/chroma
+    environment:
+      - CHROMA_SERVER_AUTH_CREDENTIALS_PROVIDER=chromadb.auth.token.TokenConfigServerAuthCredentialsProvider
+      - ANONYMIZED_TELEMETRY=false
+      - ALLOW_RESET=true
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/heartbeat"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── Qdrant ─────────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.12.1
+    container_name: qdrant
+    restart: unless-stopped
+    ports:
+      - "6333:6333"
+      - "6334:6334"
+    volumes:
+      - qdrant_data:/qdrant/storage
+    environment:
+      - QDRANT__LOG_LEVEL=INFO
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:6333/healthz"]
+      interval: 15s
+      timeout: 5s
+      retries: 5
+
+  # ── PostgreSQL ─────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB:-ragdb}
+      - POSTGRES_USER=${POSTGRES_USER:-raguser}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-ragpassword}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./scripts/init_db.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-raguser} -d ${POSTGRES_DB:-ragdb}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis ──────────────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes --maxmemory 512mb --maxmemory-policy allkeys-lru
+    networks:
+      - rag-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  # ── Prometheus ─────────────────────────────────────────────
+  prometheus:
+    image: prom/prometheus:v2.55.0
+    container_name: prometheus
+    restart: unless-stopped
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./deployment/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=30d'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    networks:
+      - rag-network
+
+  # ── Grafana ────────────────────────────────────────────────
+  grafana:
+    image: grafana/grafana:11.3.0
+    container_name: grafana
+    restart: unless-stopped
+    ports:
+      - "3000:3000"
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+      - GF_USERS_ALLOW_SIGN_UP=false
+      - GF_DASHBOARDS_DEFAULT_HOME_DASHBOARD_PATH=/etc/grafana/provisioning/dashboards/rag_dashboard.json
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./deployment/grafana/provisioning:/etc/grafana/provisioning:ro
+    depends_on:
+      - prometheus
+    networks:
+      - rag-network
