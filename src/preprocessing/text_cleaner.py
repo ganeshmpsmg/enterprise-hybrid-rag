@@ -2,6 +2,7 @@
 Text Cleaner - Production-grade text cleaning for ML documents.
 Handles common PDF extraction artifacts, Unicode issues, and noise.
 """
+
 import logging
 import re
 import unicodedata
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class CleaningStats:
     """Statistics from a cleaning operation."""
+
     original_length: int
     cleaned_length: int
     chars_removed: int
@@ -42,15 +44,24 @@ class TextCleaner:
 
     # Ligature map for common PDF ligatures
     LIGATURE_MAP = {
-        "\ufb00": "ff", "\ufb01": "fi", "\ufb02": "fl",
-        "\ufb03": "ffi", "\ufb04": "ffl", "\ufb05": "st",
-        "\ufb06": "st", "\u2019": "'", "\u2018": "'",
-        "\u201c": '"', "\u201d": '"', "\u2013": "-", "\u2014": "--",
-        "\u00a0": " ",   # Non-breaking space
-        "\u200b": "",    # Zero-width space
-        "\u200c": "",    # Zero-width non-joiner
-        "\u200d": "",    # Zero-width joiner
-        "\ufeff": "",    # BOM
+        "\ufb00": "ff",
+        "\ufb01": "fi",
+        "\ufb02": "fl",
+        "\ufb03": "ffi",
+        "\ufb04": "ffl",
+        "\ufb05": "st",
+        "\ufb06": "st",
+        "\u2019": "'",
+        "\u2018": "'",
+        "\u201c": '"',
+        "\u201d": '"',
+        "\u2013": "-",
+        "\u2014": "--",
+        "\u00a0": " ",  # Non-breaking space
+        "\u200b": "",  # Zero-width space
+        "\u200c": "",  # Zero-width non-joiner
+        "\u200d": "",  # Zero-width joiner
+        "\ufeff": "",  # BOM
     }
 
     # Patterns that are typically noise in academic/ML papers
@@ -158,7 +169,8 @@ class TextCleaner:
     def _remove_control_chars(self, text: str) -> str:
         """Remove null bytes and other control characters, keeping newlines and tabs."""
         return "".join(
-            c for c in text
+            c
+            for c in text
             if c == "\n" or c == "\t" or not unicodedata.category(c).startswith("C")
         )
 
@@ -174,7 +186,8 @@ class TextCleaner:
         lines = [line.rstrip() for line in text.split("\n")]
         # Remove very short lines (likely noise) but keep empty lines as paragraph separators
         lines = [
-            line for line in lines
+            line
+            for line in lines
             if len(line.strip()) >= self.min_line_length or line.strip() == ""
         ]
         return "\n".join(lines).strip()
@@ -186,8 +199,13 @@ class TextCleaner:
         """
         lines = text.split("\n")
         from collections import Counter
+
         line_counts = Counter(line.strip() for line in lines if line.strip())
-        repeated = {line for line, count in line_counts.items() if count >= 3 and len(line) < 100}
+        repeated = {
+            line
+            for line, count in line_counts.items()
+            if count >= 3 and len(line) < 100
+        }
         filtered = [line for line in lines if line.strip() not in repeated]
         return "\n".join(filtered)
 
@@ -201,5 +219,5 @@ class TextCleaner:
         for pattern in patterns:
             match = re.search(pattern, text)
             if match:
-                return text[:match.start()].strip()
+                return text[: match.start()].strip()
         return text

@@ -2,6 +2,7 @@
 Search Pipeline - End-to-end search from query to ranked results.
 Orchestrates query expansion, hybrid retrieval, and result formatting.
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -15,6 +16,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchResponse:
     """Final search response returned to the API."""
+
     query: str
     results: list[HybridResult]
     total_results: int

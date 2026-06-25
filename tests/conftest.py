@@ -1,4 +1,5 @@
 """Shared pytest fixtures for Enterprise RAG test suite."""
+
 import os
 import sys
 import tempfile
@@ -34,6 +35,7 @@ def sample_ml_text():
 def sample_chunks(sample_ml_text):
     """Pre-computed chunks for testing."""
     from src.chunking.recursive_chunker import RecursiveChunker
+
     chunker = RecursiveChunker(chunk_size=200, chunk_overlap=20)
     return chunker.chunk(sample_ml_text, "test_doc_001", {"file_name": "test.txt"})
 

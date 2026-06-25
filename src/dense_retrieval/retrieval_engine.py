@@ -1,6 +1,7 @@
 """
 Retrieval Engine - Unified dense retrieval with caching and configuration.
 """
+
 import logging
 from typing import Optional
 
@@ -49,11 +50,13 @@ class RetrievalEngine:
             results = [r for r in results if r.score >= self.min_score_threshold]
 
         # Log query
-        self._query_log.append({
-            "query": query,
-            "results_count": len(results),
-            "top_score": results[0].score if results else 0.0,
-        })
+        self._query_log.append(
+            {
+                "query": query,
+                "results_count": len(results),
+                "top_score": results[0].score if results else 0.0,
+            }
+        )
 
         return results
 

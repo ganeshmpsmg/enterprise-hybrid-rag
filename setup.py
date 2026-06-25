@@ -2,6 +2,7 @@
 Enterprise Hybrid RAG System
 Setup configuration for package installation.
 """
+
 from setuptools import setup, find_packages
 from pathlib import Path
 

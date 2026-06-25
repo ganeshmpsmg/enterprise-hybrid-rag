@@ -1,12 +1,15 @@
 """
 OpenAI Connector - Production OpenAI API integration with retry and streaming.
 """
+
 import logging
 import os
 import time
 from typing import Optional
 
 logger = logging.getLogger(__name__)
+
+
 class OpenAIConnector:
     """
     Production OpenAI API connector.
@@ -53,9 +56,7 @@ class OpenAIConnector:
                 )
 
             except ImportError:
-                raise ImportError(
-                    "openai not installed. Run: pip install openai"
-                )
+                raise ImportError("openai not installed. Run: pip install openai")
 
         return self._client
 
@@ -74,9 +75,7 @@ class OpenAIConnector:
                     messages=messages,
                     max_tokens=max_tokens or self.max_tokens,
                     temperature=(
-                        temperature
-                        if temperature is not None
-                        else self.temperature
+                        temperature if temperature is not None else self.temperature
                     ),
                     stream=False,
                 )
@@ -106,29 +105,21 @@ class OpenAIConnector:
 
                 error_name = type(e).__name__
 
-                if (
-                    "RateLimitError" in error_name
-                    and attempt < self.max_retries - 1
-                ):
-                    wait = 2 ** attempt
-                    logger.warning(
-                        f"Rate limit hit. Retrying in {wait}s..."
-                    )
+                if "RateLimitError" in error_name and attempt < self.max_retries - 1:
+                    wait = 2**attempt
+                    logger.warning(f"Rate limit hit. Retrying in {wait}s...")
                     time.sleep(wait)
 
                 elif "AuthenticationError" in error_name:
-                    raise ValueError(
-                        "Invalid OpenAI API key"
-                    ) from e
+                    raise ValueError("Invalid OpenAI API key") from e
 
                 elif attempt == self.max_retries - 1:
                     raise RuntimeError(
-                        f"OpenAI failed after "
-                        f"{self.max_retries} attempts: {e}"
+                        f"OpenAI failed after " f"{self.max_retries} attempts: {e}"
                     ) from e
 
                 else:
-                    wait = 2 ** attempt
+                    wait = 2**attempt
                     logger.warning(
                         f"OpenAI error ({e}). "
                         f"Retry {attempt+1}/{self.max_retries} "
@@ -145,10 +136,9 @@ class OpenAIConnector:
             {"input": 0, "output": 0},
         )
 
-        estimated_cost = (
-            (self._total_input_tokens / 1000) * costs["input"]
-            + (self._total_output_tokens / 1000) * costs["output"]
-        )
+        estimated_cost = (self._total_input_tokens / 1000) * costs["input"] + (
+            self._total_output_tokens / 1000
+        ) * costs["output"]
 
         return {
             "model": self.model,

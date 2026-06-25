@@ -2,6 +2,7 @@
 Document Loader - Unified multi-format document loading interface.
 Supports PDF, DOCX, TXT, Markdown with automatic format detection.
 """
+
 import logging
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -18,12 +19,13 @@ class Document:
     Unified document representation regardless of source format.
     This is the standard document object passed through the pipeline.
     """
-    doc_id: str              # Unique document identifier (hash)
-    source: str              # Original file path
-    file_name: str           # File name
-    file_type: str           # pdf | docx | txt | md
-    content: str             # Full extracted text content
-    metadata: dict           # Document-level metadata
+
+    doc_id: str  # Unique document identifier (hash)
+    source: str  # Original file path
+    file_name: str  # File name
+    file_type: str  # pdf | docx | txt | md
+    content: str  # Full extracted text content
+    metadata: dict  # Document-level metadata
     page_contents: list[dict] = field(default_factory=list)  # Per-page content
     total_pages: int = 1
     word_count: int = 0
@@ -132,8 +134,10 @@ class DocumentLoader:
     def _load_docx(self, path: Path) -> Document:
         """Load DOCX using python-docx."""
         import hashlib
+
         try:
             from docx import Document as DocxDocument
+
             docx = DocxDocument(str(path))
             paragraphs = [p.text for p in docx.paragraphs if p.text.strip()]
             content = "\n\n".join(paragraphs)
@@ -170,6 +174,7 @@ class DocumentLoader:
     def _load_text(self, path: Path) -> Document:
         """Load plain text file."""
         import hashlib
+
         content = path.read_text(encoding=self.encoding, errors="replace")
         doc_hash = hashlib.sha256(path.read_bytes()).hexdigest()
         return Document(
@@ -190,13 +195,14 @@ class DocumentLoader:
         """Load Markdown file, stripping markdown syntax."""
         import hashlib
         import re
+
         raw = path.read_text(encoding=self.encoding, errors="replace")
         # Strip basic markdown: headers, bold, italic, code blocks, links
-        content = re.sub(r"#{1,6}\s+", "", raw)        # Remove headers
-        content = re.sub(r"\*{1,2}([^*]+)\*{1,2}", r"\1", content)   # Bold/italic
+        content = re.sub(r"#{1,6}\s+", "", raw)  # Remove headers
+        content = re.sub(r"\*{1,2}([^*]+)\*{1,2}", r"\1", content)  # Bold/italic
         content = re.sub(r"`{3}[^`]*`{3}", "", content, flags=re.DOTALL)  # Code blocks
         content = re.sub(r"`([^`]+)`", r"\1", content)  # Inline code
-        content = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", content)   # Links
+        content = re.sub(r"\[([^\]]+)\]\([^\)]+\)", r"\1", content)  # Links
         doc_hash = hashlib.sha256(path.read_bytes()).hexdigest()
         return Document(
             doc_id=doc_hash,
@@ -235,8 +241,11 @@ class DocumentLoader:
             raise NotADirectoryError(f"Not a directory: {directory}")
 
         if glob_pattern:
-            paths = list(dir_path.glob(glob_pattern) if not recursive
-                        else dir_path.rglob(glob_pattern))
+            paths = list(
+                dir_path.glob(glob_pattern)
+                if not recursive
+                else dir_path.rglob(glob_pattern)
+            )
         else:
             paths = []
             pattern = "**/*" if recursive else "*"

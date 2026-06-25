@@ -2,6 +2,7 @@
 Query Expander - Expands queries with synonyms, related terms, and paraphrases.
 Improves recall by generating multiple query variations.
 """
+
 import logging
 import re
 from typing import Optional
@@ -10,12 +11,21 @@ logger = logging.getLogger(__name__)
 
 # ML/AI domain synonym dictionary
 ML_SYNONYMS = {
-    "neural network": ["deep learning model", "artificial neural network", "ANN", "DNN"],
+    "neural network": [
+        "deep learning model",
+        "artificial neural network",
+        "ANN",
+        "DNN",
+    ],
     "transformer": ["attention-based model", "BERT", "GPT", "encoder-decoder"],
     "embedding": ["vector representation", "dense vector", "latent representation"],
     "fine-tuning": ["transfer learning", "domain adaptation", "model adaptation"],
     "retrieval": ["search", "information retrieval", "document retrieval"],
-    "attention mechanism": ["self-attention", "multi-head attention", "scaled dot-product attention"],
+    "attention mechanism": [
+        "self-attention",
+        "multi-head attention",
+        "scaled dot-product attention",
+    ],
     "gradient descent": ["SGD", "optimizer", "backpropagation"],
     "overfitting": ["regularization", "generalization", "variance"],
     "accuracy": ["performance", "precision", "recall", "F1"],
@@ -89,7 +99,7 @@ class QueryExpander:
 
         if self.use_synonyms:
             synonym_queries = self._expand_synonyms(query)
-            expansions.extend(synonym_queries[:self.max_expansions])
+            expansions.extend(synonym_queries[: self.max_expansions])
 
         if self.use_decomposition:
             sub_queries = self._decompose_query(query)
@@ -109,7 +119,9 @@ class QueryExpander:
         result = query
         for acronym, expansion in self.ML_ACRONYMS.items():
             pattern = rf"\b{re.escape(acronym)}\b"
-            result = re.sub(pattern, f"{acronym} ({expansion})", result, flags=re.IGNORECASE)
+            result = re.sub(
+                pattern, f"{acronym} ({expansion})", result, flags=re.IGNORECASE
+            )
         return result
 
     def _expand_synonyms(self, query: str) -> list[str]:
@@ -118,7 +130,9 @@ class QueryExpander:
         for term, synonyms in ML_SYNONYMS.items():
             if term in query_lower:
                 for syn in synonyms[:2]:
-                    expanded = re.sub(re.escape(term), syn, query_lower, flags=re.IGNORECASE)
+                    expanded = re.sub(
+                        re.escape(term), syn, query_lower, flags=re.IGNORECASE
+                    )
                     if expanded != query_lower:
                         expansions.append(expanded)
         return expansions
@@ -170,4 +184,4 @@ Return ONLY the alternative queries, one per line, no numbering or explanation."
         response = self.llm_service.generate(prompt, max_tokens=200, temperature=0.3)
         # Fixed E741 by renaming 'l' to 'line'
         lines = [line.strip() for line in response.split("\n") if line.strip()]
-        return [query] + lines[:self.n_rewrites]
+        return [query] + lines[: self.n_rewrites]

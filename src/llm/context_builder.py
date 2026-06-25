@@ -2,6 +2,7 @@
 Context Builder - Assembles and ranks context for LLM answer generation.
 Deduplicates, trims, and orders retrieved chunks optimally.
 """
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -78,7 +79,7 @@ class ContextBuilder:
         """Select chunks within character budget and max_chunks limit."""
         selected = []
         total_chars = 0
-        for result in results[:self.max_chunks]:
+        for result in results[: self.max_chunks]:
             content = result.get("content", "")
             if total_chars + len(content) > self.max_context_chars:
                 # Truncate last chunk if needed
@@ -132,13 +133,15 @@ class ContextBuilder:
         citations = []
         for i, chunk in enumerate(chunks, 1):
             meta = chunk.get("metadata", {})
-            citations.append({
-                "source_number": i,
-                "chunk_id": chunk.get("chunk_id", ""),
-                "doc_id": chunk.get("doc_id", ""),
-                "file_name": meta.get("file_name", ""),
-                "page_number": meta.get("page_number"),
-                "title": meta.get("title", ""),
-                "score": chunk.get("final_score", chunk.get("score", 0)),
-            })
+            citations.append(
+                {
+                    "source_number": i,
+                    "chunk_id": chunk.get("chunk_id", ""),
+                    "doc_id": chunk.get("doc_id", ""),
+                    "file_name": meta.get("file_name", ""),
+                    "page_number": meta.get("page_number"),
+                    "title": meta.get("title", ""),
+                    "score": chunk.get("final_score", chunk.get("score", 0)),
+                }
+            )
         return citations

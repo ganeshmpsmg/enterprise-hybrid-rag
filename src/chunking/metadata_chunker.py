@@ -2,6 +2,7 @@
 Metadata Chunker - Attaches rich metadata to chunks from any chunking strategy.
 Acts as a wrapper/decorator over other chunkers to enrich chunk metadata.
 """
+
 import logging
 from typing import Optional
 from src.chunking.chunker import BaseChunker, Chunk
@@ -67,17 +68,27 @@ class MetadataChunker:
 
         for i, chunk in enumerate(chunks):
             # Add position metadata
-            chunk.metadata.update({
-                "is_first_chunk": i == 0,
-                "is_last_chunk": i == total - 1,
-                "total_chunks": total,
-                "word_count": chunk.word_count,
-                "char_count": chunk.char_count,
-            })
+            chunk.metadata.update(
+                {
+                    "is_first_chunk": i == 0,
+                    "is_last_chunk": i == total - 1,
+                    "total_chunks": total,
+                    "word_count": chunk.word_count,
+                    "char_count": chunk.char_count,
+                }
+            )
 
             # Add document metadata
-            for key in ["file_name", "file_type", "title", "authors", "topics",
-                        "publication_year", "source_path", "content_quality"]:
+            for key in [
+                "file_name",
+                "file_type",
+                "title",
+                "authors",
+                "topics",
+                "publication_year",
+                "source_path",
+                "content_quality",
+            ]:
                 if key in doc_metadata:
                     chunk.metadata[key] = doc_metadata[key]
 

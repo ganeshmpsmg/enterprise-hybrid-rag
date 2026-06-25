@@ -1,6 +1,7 @@
 """
 Retrieval Metrics - Precision@K, Recall@K, MRR, nDCG for RAG evaluation.
 """
+
 import logging
 import math
 from typing import Optional
@@ -138,9 +139,18 @@ def evaluate_retrieval(
     n = len(queries)
 
     for k in k_values:
-        prec = np.mean([precision_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)])
-        rec = np.mean([recall_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)])
-        ndcg = np.mean([ndcg_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)])
+        prec = np.mean(
+            [
+                precision_at_k(r, rel, k)
+                for r, rel in zip(retrieved_lists, relevant_sets)
+            ]
+        )
+        rec = np.mean(
+            [recall_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)]
+        )
+        ndcg = np.mean(
+            [ndcg_at_k(r, rel, k) for r, rel in zip(retrieved_lists, relevant_sets)]
+        )
         results[f"precision@{k}"] = round(float(prec), 4)
         results[f"recall@{k}"] = round(float(rec), 4)
         results[f"ndcg@{k}"] = round(float(ndcg), 4)
@@ -149,6 +159,8 @@ def evaluate_retrieval(
     results["map"] = round(mean_average_precision(retrieved_lists, relevant_sets), 4)
     results["num_queries"] = n
 
-    logger.info(f"Retrieval evaluation: MRR={results['mrr']}, MAP={results['map']}, "
-                f"nDCG@10={results.get('ndcg@10', 'N/A')}")
+    logger.info(
+        f"Retrieval evaluation: MRR={results['mrr']}, MAP={results['map']}, "
+        f"nDCG@10={results.get('ndcg@10', 'N/A')}"
+    )
     return results

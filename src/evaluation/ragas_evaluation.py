@@ -2,6 +2,7 @@
 RAGAS Evaluation - Faithfulness, Answer Relevancy, and Context Precision.
 RAGAS (RAG Assessment) is the standard evaluation framework for RAG systems.
 """
+
 import logging
 import importlib.util
 from dataclasses import dataclass
@@ -13,6 +14,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RAGASResult:
     """Results from RAGAS evaluation."""
+
     faithfulness: float
     answer_relevancy: float
     context_precision: Optional[float] = None
@@ -60,7 +62,9 @@ class RAGASEvaluator:
         if self._ragas_available:
             return self._run_ragas(questions, answers, contexts, ground_truths)
         else:
-            logger.warning("RAGAS not available. Using lightweight approximation metrics.")
+            logger.warning(
+                "RAGAS not available. Using lightweight approximation metrics."
+            )
             return self._lightweight_eval(questions, answers, contexts)
 
     def _run_ragas(self, questions, answers, contexts, ground_truths) -> RAGASResult:
@@ -90,7 +94,11 @@ class RAGASEvaluator:
             return RAGASResult(
                 faithfulness=round(float(scores["faithfulness"].mean()), 4),
                 answer_relevancy=round(float(scores["answer_relevancy"].mean()), 4),
-                context_precision=round(float(scores["context_precision"].mean()), 4) if ground_truths else None,
+                context_precision=(
+                    round(float(scores["context_precision"].mean()), 4)
+                    if ground_truths
+                    else None
+                ),
                 num_samples=len(questions),
             )
         except Exception as e:
@@ -102,6 +110,7 @@ class RAGASEvaluator:
         Lightweight approximation without RAGAS dependency.
         """
         import numpy as np
+
         faithfulness_scores = []
         relevancy_scores = []
 

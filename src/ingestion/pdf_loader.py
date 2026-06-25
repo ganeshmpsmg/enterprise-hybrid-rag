@@ -2,6 +2,7 @@
 PDF Loader - Production-grade PDF document loading with metadata extraction.
 Supports text extraction, OCR fallback, table detection, and image extraction.
 """
+
 import hashlib
 import logging
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PDFPage:
     """Represents a single page from a PDF document."""
+
     page_number: int
     text: str
     word_count: int
@@ -29,6 +31,7 @@ class PDFPage:
 @dataclass
 class PDFDocument:
     """Represents a fully loaded PDF document."""
+
     file_path: str
     file_name: str
     file_size_bytes: int
@@ -142,15 +145,17 @@ class PDFLoader:
             reader = PdfReader(str(path))
             if reader.metadata:
                 info = reader.metadata
-                metadata.update({
-                    "title": info.get("/Title", ""),
-                    "author": info.get("/Author", ""),
-                    "subject": info.get("/Subject", ""),
-                    "creator": info.get("/Creator", ""),
-                    "producer": info.get("/Producer", ""),
-                    "creation_date": str(info.get("/CreationDate", "")),
-                    "total_pages": len(reader.pages),
-                })
+                metadata.update(
+                    {
+                        "title": info.get("/Title", ""),
+                        "author": info.get("/Author", ""),
+                        "subject": info.get("/Subject", ""),
+                        "creator": info.get("/Creator", ""),
+                        "producer": info.get("/Producer", ""),
+                        "creation_date": str(info.get("/CreationDate", "")),
+                        "total_pages": len(reader.pages),
+                    }
+                )
         except Exception as e:
             logger.warning(f"Could not extract PDF metadata: {e}")
         return metadata
@@ -184,15 +189,23 @@ class PDFLoader:
                                 )
                                 text += f"\n{row_text}"
 
-                pages.append(PDFPage(
-                    page_number=i + 1,
-                    text=text,
-                    word_count=len(text.split()),
-                    char_count=len(text),
-                    has_tables=has_tables,
-                    has_images=len(page.images) > 0 if self.extract_images else False,
-                    metadata={"page_number": i + 1, "page_width": page.width, "page_height": page.height},
-                ))
+                pages.append(
+                    PDFPage(
+                        page_number=i + 1,
+                        text=text,
+                        word_count=len(text.split()),
+                        char_count=len(text),
+                        has_tables=has_tables,
+                        has_images=(
+                            len(page.images) > 0 if self.extract_images else False
+                        ),
+                        metadata={
+                            "page_number": i + 1,
+                            "page_width": page.width,
+                            "page_height": page.height,
+                        },
+                    )
+                )
         return pages
 
     def _extract_with_pypdf(self, path: Path) -> list[PDFPage]:
@@ -201,13 +214,15 @@ class PDFLoader:
         reader = PdfReader(str(path))
         for i, page in enumerate(reader.pages):
             text = page.extract_text() or ""
-            pages.append(PDFPage(
-                page_number=i + 1,
-                text=text,
-                word_count=len(text.split()),
-                char_count=len(text),
-                metadata={"page_number": i + 1},
-            ))
+            pages.append(
+                PDFPage(
+                    page_number=i + 1,
+                    text=text,
+                    word_count=len(text.split()),
+                    char_count=len(text),
+                    metadata={"page_number": i + 1},
+                )
+            )
         return pages
 
     def load_batch(self, file_paths: list[str | Path]) -> list[PDFDocument]:

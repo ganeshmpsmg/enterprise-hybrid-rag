@@ -1,4 +1,5 @@
 """Tests for document ingestion pipeline."""
+
 import pytest
 
 from src.ingestion.data_validator import DocumentValidator
@@ -24,7 +25,9 @@ def sample_pdf(tmp_path):
 def sample_txt(tmp_path):
     """Create a sample text file."""
     p = tmp_path / "test.txt"
-    p.write_text("This is a sample machine learning document about transformers and attention mechanisms.")
+    p.write_text(
+        "This is a sample machine learning document about transformers and attention mechanisms."
+    )
     return p
 
 

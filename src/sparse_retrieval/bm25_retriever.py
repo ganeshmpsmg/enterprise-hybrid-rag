@@ -2,11 +2,13 @@
 BM25 Retriever - Best Match 25 sparse retrieval algorithm.
 BM25 is the gold standard for keyword-based document retrieval.
 """
+
 import logging
 from typing import Optional
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
 
 class BM25Retriever:
     """
@@ -78,16 +80,18 @@ class BM25Retriever:
         for rank, idx in enumerate(top_indices):
             if scores[idx] <= 0:
                 continue
-            
-            results.append({
-                "chunk_id": self._chunk_ids[idx],
-                "doc_id": self._metadatas[idx].get("doc_id", ""),
-                "content": self._corpus[idx],
-                "score": float(scores[idx]),
-                "metadata": self._metadatas[idx],
-                "rank": rank,
-                "retrieval_type": "sparse_bm25",
-            })
+
+            results.append(
+                {
+                    "chunk_id": self._chunk_ids[idx],
+                    "doc_id": self._metadatas[idx].get("doc_id", ""),
+                    "content": self._corpus[idx],
+                    "score": float(scores[idx]),
+                    "metadata": self._metadatas[idx],
+                    "rank": rank,
+                    "retrieval_type": "sparse_bm25",
+                }
+            )
         return results
 
     def add_documents(
@@ -114,6 +118,7 @@ class BM25Retriever:
     def _tokenize(self, text: str) -> list[str]:
         """Improved tokenizer using regex to remove punctuation."""
         import re
+
         text = text.lower()
         text = re.sub(r"[^\w\s]", " ", text)
         return text.split()

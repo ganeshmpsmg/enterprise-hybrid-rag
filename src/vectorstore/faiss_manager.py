@@ -2,6 +2,7 @@
 FAISS Manager - Facebook AI Similarity Search vector store backend.
 Best for: high-throughput, in-memory similarity search on CPU/GPU.
 """
+
 import logging
 import os
 import pickle
@@ -31,8 +32,8 @@ class FAISSManager(VectorStore):
         dimension: int = 384,
         index_type: str = "Flat",  # Flat | IVFFlat | HNSW
         metric: str = "cosine",
-        nlist: int = 100,          # For IVFFlat: number of clusters
-        nprobe: int = 10,          # For IVFFlat: clusters to search
+        nlist: int = 100,  # For IVFFlat: number of clusters
+        nprobe: int = 10,  # For IVFFlat: clusters to search
     ):
         self.dimension = dimension
         self.index_type = index_type
@@ -57,7 +58,9 @@ class FAISSManager(VectorStore):
 
         if self.index_type == "Flat":
             if self.metric == "cosine":
-                self._index = faiss.IndexFlatIP(self.dimension)  # Inner product (cosine when normalized)
+                self._index = faiss.IndexFlatIP(
+                    self.dimension
+                )  # Inner product (cosine when normalized)
             else:
                 self._index = faiss.IndexFlatL2(self.dimension)
         elif self.index_type == "IVFFlat":
@@ -69,7 +72,9 @@ class FAISSManager(VectorStore):
         else:
             self._index = faiss.IndexFlatIP(self.dimension)
 
-        logger.info(f"Created FAISS index: type={self.index_type}, dim={self.dimension}")
+        logger.info(
+            f"Created FAISS index: type={self.index_type}, dim={self.dimension}"
+        )
         return self._index
 
     def add_embeddings(
@@ -89,12 +94,15 @@ class FAISSManager(VectorStore):
         # Normalize for cosine similarity
         if self.metric == "cosine":
             import faiss
+
             faiss.normalize_L2(embeddings_f32)
 
         # Train IVFFlat if needed
         if self.index_type == "IVFFlat" and not index.is_trained:
             if len(embeddings_f32) >= self.nlist:
-                logger.info(f"Training IVFFlat index with {len(embeddings_f32)} vectors")
+                logger.info(
+                    f"Training IVFFlat index with {len(embeddings_f32)} vectors"
+                )
                 index.train(embeddings_f32)
             else:
                 logger.warning(
@@ -102,6 +110,7 @@ class FAISSManager(VectorStore):
                     "Switching to Flat index."
                 )
                 import faiss as faiss_lib
+
                 self._index = faiss_lib.IndexFlatIP(self.dimension)
                 index = self._index
 
@@ -136,6 +145,7 @@ class FAISSManager(VectorStore):
         query = query_embedding.astype(np.float32).reshape(1, -1)
         if self.metric == "cosine":
             import faiss
+
             faiss.normalize_L2(query)
 
         # Search with extra candidates if we need to filter
@@ -158,14 +168,16 @@ class FAISSManager(VectorStore):
                 if not self._matches_filter(meta, filter_metadata):
                     continue
 
-            results.append(SearchResult(
-                chunk_id=self._chunk_ids[idx],
-                doc_id=meta.get("doc_id", ""),
-                content=self._contents[idx],
-                score=float(score),
-                metadata=meta,
-                rank=len(results),
-            ))
+            results.append(
+                SearchResult(
+                    chunk_id=self._chunk_ids[idx],
+                    doc_id=meta.get("doc_id", ""),
+                    content=self._contents[idx],
+                    score=float(score),
+                    metadata=meta,
+                    rank=len(results),
+                )
+            )
 
             if len(results) >= top_k:
                 break
@@ -187,8 +199,7 @@ class FAISSManager(VectorStore):
         )
         # Remove from metadata
         keep_indices = [
-            i for i in range(len(self._chunk_ids))
-            if i not in set(indices_to_delete)
+            i for i in range(len(self._chunk_ids)) if i not in set(indices_to_delete)
         ]
         self._rebuild_from_indices(keep_indices)
         del self._doc_id_to_indices[doc_id]
@@ -208,6 +219,7 @@ class FAISSManager(VectorStore):
     def save(self, path: str):
         """Save FAISS index and metadata to disk."""
         import faiss
+
         Path(path).mkdir(parents=True, exist_ok=True)
         faiss.write_index(self._index, os.path.join(path, "index.faiss"))
         metadata = {
@@ -223,6 +235,7 @@ class FAISSManager(VectorStore):
     def load(self, path: str):
         """Load FAISS index and metadata from disk."""
         import faiss
+
         index_path = os.path.join(path, "index.faiss")
         meta_path = os.path.join(path, "metadata.pkl")
         if not os.path.exists(index_path):
@@ -259,4 +272,6 @@ class FAISSManager(VectorStore):
             return
         # This requires re-embedding which we can't do here
         # In production, use a different approach or Qdrant which supports deletion
-        logger.warning("FAISS rebuild after deletion is not fully implemented. Use Qdrant for deletion-heavy workloads.")
+        logger.warning(
+            "FAISS rebuild after deletion is not fully implemented. Use Qdrant for deletion-heavy workloads."
+        )

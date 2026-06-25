@@ -2,6 +2,7 @@
 File Manager - Handles file storage, retrieval, and lifecycle management.
 Manages the transition from raw uploads to processed documents.
 """
+
 import hashlib
 import logging
 import uuid
@@ -63,7 +64,9 @@ class FileManager:
         # Check for duplicates by hash
         existing = self._find_by_hash(file_hash)
         if existing:
-            logger.info(f"Duplicate file detected: {original_filename} (hash: {file_hash[:8]})")
+            logger.info(
+                f"Duplicate file detected: {original_filename} (hash: {file_hash[:8]})"
+            )
             return existing
 
         # Create safe filename: {file_id}_{original_name}
@@ -88,7 +91,9 @@ class FileManager:
         }
 
         self._registry[file_id] = file_info
-        logger.info(f"Saved upload: {original_filename} -> {stored_name} (ID: {file_id[:8]})")
+        logger.info(
+            f"Saved upload: {original_filename} -> {stored_name} (ID: {file_id[:8]})"
+        )
         return file_info
 
     def save_upload_from_path(self, source_path: str | Path) -> dict:
@@ -105,7 +110,9 @@ class FileManager:
         if file_id in self._registry:
             self._registry[file_id]["processed"] = True
             self._registry[file_id]["stage"] = "processed"
-            self._registry[file_id]["processed_timestamp"] = datetime.utcnow().isoformat()
+            self._registry[file_id][
+                "processed_timestamp"
+            ] = datetime.utcnow().isoformat()
             return self._registry[file_id]
         return None
 
@@ -135,7 +142,9 @@ class FileManager:
         path = Path(info["stored_path"])
         if path.exists():
             path.unlink()
-            logger.info(f"Deleted file: {info['original_filename']} (ID: {file_id[:8]})")
+            logger.info(
+                f"Deleted file: {info['original_filename']} (ID: {file_id[:8]})"
+            )
         del self._registry[file_id]
         return True
 
@@ -179,6 +188,7 @@ class FileManager:
     def _sanitize_filename(self, filename: str) -> str:
         """Remove unsafe characters from filename."""
         import re
+
         # Keep only alphanumeric, dots, hyphens, underscores
         safe = re.sub(r"[^\w\-.]", "_", filename)
         # Collapse multiple underscores

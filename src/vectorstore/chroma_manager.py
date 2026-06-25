@@ -2,6 +2,7 @@
 ChromaDB Manager - Persistent vector store with metadata filtering.
 Best for: persistent storage, metadata filtering, easy setup.
 """
+
 import logging
 from typing import Optional
 import numpy as np
@@ -60,7 +61,6 @@ class ChromaManager(VectorStore):
             )
         return self._collection
 
-
     def _init_client(self):
         """Initialize ChromaDB client (local or HTTP)."""
         try:
@@ -111,10 +111,13 @@ class ChromaManager(VectorStore):
                 added += len(chunk_ids[i:end])
             except Exception as e:
                 import traceback
+
                 traceback.print_exc()
                 logger.error(f"ChromaDB upsert error (batch {i}-{end}): {repr(e)}")
 
-        logger.info(f"ChromaDB: upserted {added} vectors. Total: {self.collection.count()}")
+        logger.info(
+            f"ChromaDB: upserted {added} vectors. Total: {self.collection.count()}"
+        )
         return added
 
     def search(
@@ -156,14 +159,16 @@ class ChromaManager(VectorStore):
             # ChromaDB cosine distance is (1 - cosine_similarity)
             score = 1.0 - distance if self.distance_function == "cosine" else -distance
 
-            search_results.append(SearchResult(
-                chunk_id=chunk_id,
-                doc_id=meta.get("doc_id", ""),
-                content=doc,
-                score=round(score, 4),
-                metadata=meta,
-                rank=rank,
-            ))
+            search_results.append(
+                SearchResult(
+                    chunk_id=chunk_id,
+                    doc_id=meta.get("doc_id", ""),
+                    content=doc,
+                    score=round(score, 4),
+                    metadata=meta,
+                    rank=rank,
+                )
+            )
 
         return search_results
 
@@ -175,7 +180,9 @@ class ChromaManager(VectorStore):
             ids_to_delete = results["ids"]
             if ids_to_delete:
                 self.collection.delete(ids=ids_to_delete)
-                logger.info(f"ChromaDB: deleted {len(ids_to_delete)} chunks for doc {doc_id[:8]}")
+                logger.info(
+                    f"ChromaDB: deleted {len(ids_to_delete)} chunks for doc {doc_id[:8]}"
+                )
             return len(ids_to_delete)
         except Exception as e:
             logger.error(f"ChromaDB delete error: {e}")
@@ -223,5 +230,7 @@ class ChromaManager(VectorStore):
         # Multiple conditions: use $and
         conditions = []
         for key, value in filters.items():
-            conditions.append({key: {"$eq": str(value) if not isinstance(value, bool) else value}})
+            conditions.append(
+                {key: {"$eq": str(value) if not isinstance(value, bool) else value}}
+            )
         return {"$and": conditions}

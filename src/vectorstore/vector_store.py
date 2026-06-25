@@ -2,6 +2,7 @@
 Vector Store Interface - Abstract base for all vector database backends.
 Provides a unified API regardless of backend (FAISS, ChromaDB, Qdrant).
 """
+
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -14,6 +15,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class SearchResult:
     """A single search result from the vector store."""
+
     chunk_id: str
     doc_id: str
     content: str

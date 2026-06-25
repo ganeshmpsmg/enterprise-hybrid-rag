@@ -2,6 +2,7 @@
 TF-IDF Retriever - Scikit-learn based TF-IDF sparse retrieval.
 Complements BM25; faster to update incrementally.
 """
+
 import logging
 import pickle
 from pathlib import Path
@@ -99,15 +100,17 @@ class TFIDFRetriever:
         for rank, idx in enumerate(top_indices):
             if scores[idx] <= 0:
                 continue
-            results.append({
-                "chunk_id": self._chunk_ids[idx],
-                "doc_id": self._metadatas[idx].get("doc_id", ""),
-                "content": self._corpus[idx],
-                "score": float(scores[idx]),
-                "metadata": self._metadatas[idx],
-                "rank": rank,
-                "retrieval_type": "sparse_tfidf",
-            })
+            results.append(
+                {
+                    "chunk_id": self._chunk_ids[idx],
+                    "doc_id": self._metadatas[idx].get("doc_id", ""),
+                    "content": self._corpus[idx],
+                    "score": float(scores[idx]),
+                    "metadata": self._metadatas[idx],
+                    "rank": rank,
+                    "retrieval_type": "sparse_tfidf",
+                }
+            )
         return results
 
     def save(self, path: str):
@@ -137,7 +140,9 @@ class TFIDFRetriever:
         return {
             "indexed": self._doc_matrix is not None,
             "total_documents": len(self._corpus),
-            "vocabulary_size": len(self._vectorizer.vocabulary_) if self._doc_matrix is not None else 0,
+            "vocabulary_size": (
+                len(self._vectorizer.vocabulary_) if self._doc_matrix is not None else 0
+            ),
             "ngram_range": self.ngram_range,
             "max_features": self.max_features,
         }

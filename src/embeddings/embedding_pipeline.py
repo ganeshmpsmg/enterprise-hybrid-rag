@@ -2,6 +2,7 @@
 Embedding Pipeline - Orchestrates the full embedding workflow for the RAG system.
 Processes chunks, generates embeddings, handles errors, and tracks progress.
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class EmbeddedChunk:
     """A chunk paired with its embedding vector."""
+
     chunk: Chunk
     embedding: np.ndarray
     embed_time_ms: float = 0.0
@@ -41,6 +43,7 @@ class EmbeddedChunk:
 @dataclass
 class EmbeddingResult:
     """Result of embedding a batch of chunks."""
+
     embedded_chunks: list[EmbeddedChunk]
     total_chunks: int
     successful: int
@@ -72,7 +75,7 @@ class EmbeddingPipeline:
 
     # Prefix templates for asymmetric embedding models
     PASSAGE_PREFIX = "passage: "  # For E5 models
-    QUERY_PREFIX = "query: "       # For E5 models
+    QUERY_PREFIX = "query: "  # For E5 models
 
     def __init__(
         self,
@@ -110,7 +113,7 @@ class EmbeddingPipeline:
 
         # Process in batches
         for i in range(0, len(chunks), self.batch_size):
-            batch = chunks[i:i + self.batch_size]
+            batch = chunks[i : i + self.batch_size]
             try:
                 texts = [self._prepare_text(c.content, mode="passage") for c in batch]
                 t_batch = time.perf_counter()
@@ -118,11 +121,13 @@ class EmbeddingPipeline:
                 batch_ms = (time.perf_counter() - t_batch) * 1000
 
                 for j, (chunk, emb) in enumerate(zip(batch, embeddings)):
-                    embedded.append(EmbeddedChunk(
-                        chunk=chunk,
-                        embedding=emb,
-                        embed_time_ms=batch_ms / len(batch),
-                    ))
+                    embedded.append(
+                        EmbeddedChunk(
+                            chunk=chunk,
+                            embedding=emb,
+                            embed_time_ms=batch_ms / len(batch),
+                        )
+                    )
 
                 logger.debug(
                     f"Batch {i//self.batch_size + 1}: "
@@ -176,7 +181,7 @@ class EmbeddingPipeline:
         """
         # Truncate
         if len(text) > self.max_text_length:
-            text = text[:self.max_text_length]
+            text = text[: self.max_text_length]
 
         # Add prefix for asymmetric models (E5, BGE)
         if self.use_passage_prefix:

@@ -8,6 +8,7 @@ Architecture difference:
 Cross-encoder is slower but far more accurate because it uses full attention
 between query and document tokens (vs independent encoding in bi-encoders).
 """
+
 import logging
 import time
 from typing import Optional
@@ -101,7 +102,9 @@ class CrossEncoderReranker:
             result[score_field] = round(float(score), 4)
             result["original_rank"] = candidate.get("rank", -1)
             result["rank"] = new_rank
-            result["retrieval_type"] = f"{candidate.get('retrieval_type', 'unknown')}_reranked"
+            result["retrieval_type"] = (
+                f"{candidate.get('retrieval_type', 'unknown')}_reranked"
+            )
             results.append(result)
 
         logger.info(
@@ -128,7 +131,7 @@ class CrossEncoderReranker:
         """Run cross-encoder inference in batches."""
         all_scores = []
         for i in range(0, len(pairs), self.batch_size):
-            batch = pairs[i:i + self.batch_size]
+            batch = pairs[i : i + self.batch_size]
             try:
                 scores = self.model.predict(
                     batch,
@@ -145,6 +148,7 @@ class CrossEncoderReranker:
     def _load_model(self):
         try:
             from sentence_transformers import CrossEncoder
+
             logger.info(f"Loading cross-encoder: {self.model_name}")
             self._model = CrossEncoder(
                 self.model_name,
@@ -158,6 +162,7 @@ class CrossEncoderReranker:
     def _auto_device(self) -> str:
         try:
             import torch
+
             if torch.cuda.is_available():
                 return "cuda"
         except ImportError:

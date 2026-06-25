@@ -1,4 +1,5 @@
 """Tests for retrieval components: BM25, Dense, Hybrid, RRF."""
+
 import pytest
 
 
@@ -7,6 +8,7 @@ class TestBM25Retriever:
     @pytest.fixture
     def bm25_with_data(self):
         from src.sparse_retrieval.bm25_retriever import BM25Retriever
+
         bm25 = BM25Retriever(k1=1.5, b=0.75)
         corpus = [
             "transformer attention mechanism neural network deep learning",
@@ -16,7 +18,10 @@ class TestBM25Retriever:
             "reinforcement learning reward policy agent environment",
         ]
         chunk_ids = [f"chunk_{i}" for i in range(len(corpus))]
-        metadatas = [{"doc_id": f"doc_{i}", "file_name": f"paper_{i}.pdf"} for i in range(len(corpus))]
+        metadatas = [
+            {"doc_id": f"doc_{i}", "file_name": f"paper_{i}.pdf"}
+            for i in range(len(corpus))
+        ]
         bm25.fit(corpus, chunk_ids, metadatas)
         return bm25
 
@@ -40,7 +45,9 @@ class TestBM25Retriever:
         assert results == []
 
     def test_metadata_filter(self, bm25_with_data):
-        results = bm25_with_data.search("neural network", top_k=5, filter_metadata={"doc_id": "doc_0"})
+        results = bm25_with_data.search(
+            "neural network", top_k=5, filter_metadata={"doc_id": "doc_0"}
+        )
         assert all(r["doc_id"] == "doc_0" for r in results)
 
     def test_stats(self, bm25_with_data):
@@ -53,6 +60,7 @@ class TestBM25Retriever:
 class TestRRF:
     def test_basic_fusion(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
+
         dense = [
             {"chunk_id": "A", "score": 0.9, "content": "a"},
             {"chunk_id": "B", "score": 0.7, "content": "b"},
@@ -68,6 +76,7 @@ class TestRRF:
 
     def test_single_ranker(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
+
         results = [{"chunk_id": "X", "score": 1.0, "content": "x"}]
         fused = reciprocal_rank_fusion([results], k=60)
         assert len(fused) == 1
@@ -75,7 +84,11 @@ class TestRRF:
 
     def test_scores_are_positive(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
-        r1 = [{"chunk_id": f"d{i}", "score": float(10-i), "content": ""} for i in range(5)]
+
+        r1 = [
+            {"chunk_id": f"d{i}", "score": float(10 - i), "content": ""}
+            for i in range(5)
+        ]
         r2 = [{"chunk_id": f"d{i}", "score": float(i), "content": ""} for i in range(5)]
         fused = reciprocal_rank_fusion([r1, r2])
         for item in fused:
@@ -83,6 +96,7 @@ class TestRRF:
 
     def test_rrf_k_parameter_effect(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
+
         results = [{"chunk_id": "A", "score": 1.0, "content": ""}]
         fused_k60 = reciprocal_rank_fusion([results], k=60)
         fused_k1 = reciprocal_rank_fusion([results], k=1)
@@ -91,11 +105,13 @@ class TestRRF:
 
     def test_empty_lists_handled(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
+
         result = reciprocal_rank_fusion([[], []])
         assert result == []
 
     def test_weighted_fusion(self):
         from src.hybrid_retrieval.rrf import reciprocal_rank_fusion
+
         r1 = [{"chunk_id": "A", "score": 1.0, "content": ""}]
         r2 = [{"chunk_id": "B", "score": 1.0, "content": ""}]
         # With equal weights both should appear
@@ -107,6 +123,7 @@ class TestRRF:
 class TestRetrievalMetrics:
     def test_precision_at_k(self):
         from src.evaluation.retrieval_metrics import precision_at_k
+
         retrieved = ["a", "b", "c", "d"]
         relevant = {"a", "c"}
         assert precision_at_k(retrieved, relevant, k=4) == 0.5
@@ -114,12 +131,14 @@ class TestRetrievalMetrics:
 
     def test_recall_at_k(self):
         from src.evaluation.retrieval_metrics import recall_at_k
+
         retrieved = ["a", "b", "c"]
         relevant = {"a", "c", "e"}
-        assert recall_at_k(retrieved, relevant, k=3) == pytest.approx(2/3)
+        assert recall_at_k(retrieved, relevant, k=3) == pytest.approx(2 / 3)
 
     def test_mrr_perfect(self):
         from src.evaluation.retrieval_metrics import mean_reciprocal_rank
+
         retrieved = [["a", "b", "c"]]
         relevant = [{"a"}]
         mrr = mean_reciprocal_rank(retrieved, relevant)
@@ -127,6 +146,7 @@ class TestRetrievalMetrics:
 
     def test_mrr_miss(self):
         from src.evaluation.retrieval_metrics import mean_reciprocal_rank
+
         retrieved = [["x", "y", "z"]]
         relevant = [{"a"}]
         mrr = mean_reciprocal_rank(retrieved, relevant)
@@ -134,6 +154,7 @@ class TestRetrievalMetrics:
 
     def test_ndcg_perfect(self):
         from src.evaluation.retrieval_metrics import ndcg_at_k
+
         retrieved = ["a", "b", "c"]
         relevant = {"a", "b"}
         ndcg = ndcg_at_k(retrieved, relevant, k=3)
@@ -141,6 +162,7 @@ class TestRetrievalMetrics:
 
     def test_ndcg_imperfect(self):
         from src.evaluation.retrieval_metrics import ndcg_at_k
+
         retrieved = ["x", "a", "b"]  # First result is irrelevant
         relevant = {"a", "b"}
         ndcg = ndcg_at_k(retrieved, relevant, k=3)

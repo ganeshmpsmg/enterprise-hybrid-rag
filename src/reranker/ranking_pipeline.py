@@ -2,6 +2,7 @@
 Ranking Pipeline - Combines hybrid retrieval with cross-encoder reranking.
 Full retrieval -> reranking pipeline with configurable stages.
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -16,6 +17,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RankedResult:
     """Final ranked result after all retrieval and reranking stages."""
+
     chunk_id: str
     doc_id: str
     content: str
@@ -54,8 +56,8 @@ class RankingPipeline:
         self,
         hybrid_retriever: HybridRetriever,
         reranker: Reranker,
-        hybrid_top_k: int = 20,   # Candidates for reranker
-        rerank_top_k: int = 5,    # Final results after reranking
+        hybrid_top_k: int = 20,  # Candidates for reranker
+        rerank_top_k: int = 5,  # Final results after reranking
     ):
         self.hybrid_retriever = hybrid_retriever
         self.reranker = reranker
@@ -97,22 +99,26 @@ class RankingPipeline:
         hybrid_score_map = {r["chunk_id"]: r["score"] for r in candidates}
 
         # Stage 2: Cross-encoder reranking
-        reranked = self.reranker.rerank(query=query, candidates=candidates, top_k=final_k)
+        reranked = self.reranker.rerank(
+            query=query, candidates=candidates, top_k=final_k
+        )
 
         # Build final results
         results = []
         for rank, item in enumerate(reranked):
             cid = item.get("chunk_id", "")
-            results.append(RankedResult(
-                chunk_id=cid,
-                doc_id=item.get("doc_id", ""),
-                content=item.get("content", ""),
-                final_score=item.get("rerank_score", 0.0),
-                rank=rank,
-                hybrid_score=hybrid_score_map.get(cid, 0.0),
-                rerank_score=item.get("rerank_score", 0.0),
-                metadata=item.get("metadata", {}),
-            ))
+            results.append(
+                RankedResult(
+                    chunk_id=cid,
+                    doc_id=item.get("doc_id", ""),
+                    content=item.get("content", ""),
+                    final_score=item.get("rerank_score", 0.0),
+                    rank=rank,
+                    hybrid_score=hybrid_score_map.get(cid, 0.0),
+                    rerank_score=item.get("rerank_score", 0.0),
+                    metadata=item.get("metadata", {}),
+                )
+            )
 
         elapsed = time.perf_counter() - t0
         logger.info(

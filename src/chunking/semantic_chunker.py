@@ -2,6 +2,7 @@
 Semantic Chunker - Groups text by semantic similarity using embeddings.
 Creates semantically coherent chunks by detecting topic shifts.
 """
+
 import logging
 from typing import Optional
 import numpy as np
@@ -74,7 +75,9 @@ class SemanticChunker(BaseChunker):
                 continue
             # If group is still too large, split it further
             if len(content) > self.chunk_size * 2:
-                sub_chunks = self._split_large_group(content, doc_id, i, char_offset, meta)
+                sub_chunks = self._split_large_group(
+                    content, doc_id, i, char_offset, meta
+                )
                 chunks.extend(sub_chunks)
                 char_offset += len(content)
                 continue
@@ -107,6 +110,7 @@ class SemanticChunker(BaseChunker):
     def _split_into_sentences(self, text: str) -> list[str]:
         """Split text into sentences using regex."""
         import re
+
         # Split on sentence-ending punctuation followed by whitespace and capital
         sentence_endings = re.compile(r"(?<=[.!?])\s+(?=[A-Z])")
         sentences = sentence_endings.split(text)
@@ -118,12 +122,16 @@ class SemanticChunker(BaseChunker):
             # Lazy load a lightweight model
             try:
                 from sentence_transformers import SentenceTransformer
+
                 self._embedding_model = SentenceTransformer("all-MiniLM-L6-v2")
             except ImportError:
                 return None
         try:
             embeddings = self._embedding_model.encode(
-                sentences, batch_size=32, show_progress_bar=False, normalize_embeddings=True
+                sentences,
+                batch_size=32,
+                show_progress_bar=False,
+                normalize_embeddings=True,
             )
             return np.array(embeddings)
         except Exception as e:
@@ -159,6 +167,7 @@ class SemanticChunker(BaseChunker):
     def _fallback_chunk(self, text: str, doc_id: str, meta: dict) -> list[Chunk]:
         """Fall back to recursive chunking."""
         from src.chunking.recursive_chunker import RecursiveChunker
+
         rc = RecursiveChunker(self.chunk_size, self.chunk_overlap, self.min_chunk_size)
         return rc.chunk(text, doc_id, meta)
 
@@ -167,8 +176,11 @@ class SemanticChunker(BaseChunker):
     ) -> list[Chunk]:
         """Split oversized semantic groups using recursive chunker."""
         from src.chunking.recursive_chunker import RecursiveChunker
+
         rc = RecursiveChunker(self.chunk_size, self.chunk_overlap, self.min_chunk_size)
-        sub_chunks = rc.chunk(text, doc_id, {**meta, "chunk_strategy": "semantic_recursive"})
+        sub_chunks = rc.chunk(
+            text, doc_id, {**meta, "chunk_strategy": "semantic_recursive"}
+        )
         # Adjust chunk indices
         for j, c in enumerate(sub_chunks):
             c.chunk_index = base_index * 100 + j

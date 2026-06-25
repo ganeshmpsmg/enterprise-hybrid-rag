@@ -1,13 +1,17 @@
 #!/usr/bin/env python3
 """Script to ingest sample ML documents for testing."""
+
 import os
 import sys
+
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import logging
 from pathlib import Path
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(
+    level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s"
+)
 logger = logging.getLogger(__name__)
 
 SAMPLE_DOCS = [
@@ -123,11 +127,15 @@ def main():
 
     logger.info("\nTo ingest documents via API:")
     for doc in SAMPLE_DOCS:
-        logger.info(f"  curl -X POST http://localhost:8000/upload -F 'file=@documents/{doc['filename']}'")
+        logger.info(
+            f"  curl -X POST http://localhost:8000/upload -F 'file=@documents/{doc['filename']}'"
+        )
     logger.info("\nTo ask questions:")
     logger.info("  curl -X POST http://localhost:8000/ask \\")
     logger.info("    -H 'Content-Type: application/json' \\")
-    logger.info("    -d '{\"query\": \"How does the attention mechanism work in transformers?\"}'")
+    logger.info(
+        '    -d \'{"query": "How does the attention mechanism work in transformers?"}\''
+    )
 
 
 if __name__ == "__main__":

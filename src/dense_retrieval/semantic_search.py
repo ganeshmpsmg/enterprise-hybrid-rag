@@ -2,6 +2,7 @@
 Semantic Search - High-level semantic search with query preprocessing and MMR.
 Extends dense retrieval with Maximal Marginal Relevance for diversity.
 """
+
 import logging
 from typing import Optional
 import numpy as np
@@ -106,7 +107,9 @@ class SemanticSearch:
                 selected_embs = cand_norms[selected_indices]
                 for i in remaining_indices:
                     relevance = self.mmr_lambda * query_sims[i]
-                    redundancy = (1 - self.mmr_lambda) * np.max(cand_norms[i] @ selected_embs.T)
+                    redundancy = (1 - self.mmr_lambda) * np.max(
+                        cand_norms[i] @ selected_embs.T
+                    )
                     mmr_scores.append(relevance - redundancy)
                 best = int(np.argmax(mmr_scores))
                 best_idx = remaining_indices[best]

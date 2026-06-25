@@ -2,6 +2,7 @@
 Dense Retriever - Semantic similarity search using embedding vectors.
 Finds documents semantically similar to the query even without exact term matches.
 """
+
 import logging
 import time
 from typing import Optional

@@ -2,6 +2,7 @@
 Embedding Utilities - Helper functions for embedding operations.
 Cosine similarity, normalization, dimensionality reduction, etc.
 """
+
 import logging
 import numpy as np
 
@@ -59,9 +60,9 @@ def batch_cosine_similarity(
     query_norm = query_emb / (np.linalg.norm(query_emb) + 1e-10)
     similarities = np.zeros(len(corpus_embs), dtype=np.float32)
     for i in range(0, len(corpus_embs), batch_size):
-        batch = corpus_embs[i:i + batch_size]
+        batch = corpus_embs[i : i + batch_size]
         batch_norm = batch / (np.linalg.norm(batch, axis=1, keepdims=True) + 1e-10)
-        similarities[i:i + len(batch)] = batch_norm @ query_norm
+        similarities[i : i + len(batch)] = batch_norm @ query_norm
     return similarities
 
 
@@ -78,14 +79,16 @@ def deduplicate_embeddings(
     kept_indices = [0]
     for i in range(1, len(embeddings)):
         sims = cosine_similarity_matrix(
-            embeddings[i:i+1], embeddings[np.array(kept_indices)]
+            embeddings[i : i + 1], embeddings[np.array(kept_indices)]
         )[0]
         if np.max(sims) < threshold:
             kept_indices.append(i)
     return embeddings[np.array(kept_indices)], kept_indices
 
 
-def mean_pooling(token_embeddings: np.ndarray, attention_mask: np.ndarray) -> np.ndarray:
+def mean_pooling(
+    token_embeddings: np.ndarray, attention_mask: np.ndarray
+) -> np.ndarray:
     """
     Mean pooling over token embeddings with attention mask.
     Used when working with raw HuggingFace transformer outputs.

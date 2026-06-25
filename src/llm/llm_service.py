@@ -2,6 +2,7 @@
 LLM Service - Unified interface supporting OpenAI, Anthropic, and Ollama.
 Abstracts provider-specific details for clean RAG pipeline integration.
 """
+
 import logging
 import os
 from typing import Optional
@@ -89,6 +90,7 @@ class LLMService:
 
     def _init_anthropic(self, model: Optional[str], **kwargs):
         """Initialize Anthropic connector."""
+
         class AnthropicConnector:
             def __init__(self, model, temperature, max_tokens):
                 self.model = model or "claude-3-haiku-20240307"
@@ -99,8 +101,11 @@ class LLMService:
             def generate(self, messages, max_tokens=None, temperature=None, **kw):
                 try:
                     import anthropic
+
                     client = anthropic.Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
-                    system_msg = next((m["content"] for m in messages if m["role"] == "system"), "")
+                    system_msg = next(
+                        (m["content"] for m in messages if m["role"] == "system"), ""
+                    )
                     user_msgs = [m for m in messages if m["role"] != "system"]
                     resp = client.messages.create(
                         model=self.model,
@@ -121,6 +126,7 @@ class LLMService:
 
     def _init_ollama(self, model: Optional[str], **kwargs):
         """Initialize Ollama (local LLM) connector."""
+
         class OllamaConnector:
             def __init__(self, model, temperature, max_tokens):
                 self.model = model or "llama3.2"
@@ -132,6 +138,7 @@ class LLMService:
             def generate(self, messages, max_tokens=None, temperature=None, **kw):
                 try:
                     import requests
+
                     prompt = "\n".join(
                         f"{m['role'].upper()}: {m['content']}" for m in messages
                     )

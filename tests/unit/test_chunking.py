@@ -1,9 +1,9 @@
 """Tests for chunking strategies."""
+
 import pytest
 from src.chunking.chunker import Chunk
 from src.chunking.recursive_chunker import RecursiveChunker
 from src.chunking.metadata_chunker import MetadataChunker
-
 
 ML_TEXT = """
 Transformer architecture has revolutionized natural language processing.
@@ -106,21 +106,44 @@ class TestMetadataChunker:
 class TestChunk:
     def test_word_count_property(self):
         chunk = Chunk(
-            chunk_id="c1", doc_id="d1", content="hello world this is a test",
-            chunk_index=0, start_char=0, end_char=26
+            chunk_id="c1",
+            doc_id="d1",
+            content="hello world this is a test",
+            chunk_index=0,
+            start_char=0,
+            end_char=26,
         )
         assert chunk.word_count == 6
 
     def test_is_empty_property(self):
-        empty = Chunk(chunk_id="c1", doc_id="d1", content="   ", chunk_index=0, start_char=0, end_char=3)
+        empty = Chunk(
+            chunk_id="c1",
+            doc_id="d1",
+            content="   ",
+            chunk_index=0,
+            start_char=0,
+            end_char=3,
+        )
         assert empty.is_empty is True
-        nonempty = Chunk(chunk_id="c2", doc_id="d1", content="text", chunk_index=0, start_char=0, end_char=4)
+        nonempty = Chunk(
+            chunk_id="c2",
+            doc_id="d1",
+            content="text",
+            chunk_index=0,
+            start_char=0,
+            end_char=4,
+        )
         assert nonempty.is_empty is False
 
     def test_to_dict(self):
         chunk = Chunk(
-            chunk_id="c1", doc_id="d1", content="test content",
-            chunk_index=0, start_char=0, end_char=12, metadata={"key": "val"}
+            chunk_id="c1",
+            doc_id="d1",
+            content="test content",
+            chunk_index=0,
+            start_char=0,
+            end_char=12,
+            metadata={"key": "val"},
         )
         d = chunk.to_dict()
         assert d["chunk_id"] == "c1"

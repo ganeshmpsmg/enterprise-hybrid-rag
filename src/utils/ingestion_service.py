@@ -2,6 +2,7 @@
 Ingestion Service - Orchestrates full document ingestion pipeline.
 From raw bytes to indexed chunks.
 """
+
 import logging
 import tempfile
 from pathlib import Path
@@ -39,7 +40,9 @@ class IngestionService:
         self.text_cleaner = TextCleaner()
         self.metadata_extractor = MetadataExtractor()
         self.chunker = MetadataChunker(
-            base_chunker=RecursiveChunker(chunk_size=chunk_size, chunk_overlap=chunk_overlap),
+            base_chunker=RecursiveChunker(
+                chunk_size=chunk_size, chunk_overlap=chunk_overlap
+            ),
             chunk_size=chunk_size,
             chunk_overlap=chunk_overlap,
         )
@@ -67,13 +70,15 @@ class IngestionService:
         finally:
             Path(tmp_path).unlink(missing_ok=True)
 
-    def ingest_file(self, file_path: str, original_filename: Optional[str] = None) -> dict:
+    def ingest_file(
+        self, file_path: str, original_filename: Optional[str] = None
+    ) -> dict:
         """Ingest a document from a file path."""
         path = Path(file_path)
 
         # 1. Load document
         doc = self.doc_loader.load(path)
-        if hasattr(doc, 'is_empty') and doc.is_empty:
+        if hasattr(doc, "is_empty") and doc.is_empty:
             raise ValueError(f"Document is empty: {path.name}")
         elif not doc.content.strip():
             raise ValueError(f"Document has no extractable text: {path.name}")
@@ -125,7 +130,6 @@ class IngestionService:
         print("Chunk IDs:", len(self.sparse_retriever._chunk_ids))
         print("BM25 object:", self.sparse_retriever._bm25 is not None)
         print("=" * 50)
-        
 
         self._indexed_docs.append(doc.doc_id)
         self._all_chunks.extend(chunks)
@@ -149,4 +153,3 @@ class IngestionService:
             "indexed_documents": len(self._indexed_docs),
             "total_chunks": len(self._all_chunks),
         }
-    

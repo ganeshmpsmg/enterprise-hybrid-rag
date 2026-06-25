@@ -1,6 +1,7 @@
 """
 API Schemas - Pydantic models for request/response validation.
 """
+
 from enum import Enum
 from typing import Any, Optional
 from pydantic import BaseModel, Field, field_validator
@@ -16,10 +17,14 @@ class FileTypeEnum(str, Enum):
 class SearchRequest(BaseModel):
     query: str = Field(..., min_length=1, max_length=1000, description="Search query")
     top_k: int = Field(default=10, ge=1, le=50, description="Number of results")
-    filter_file_type: Optional[FileTypeEnum] = Field(None, description="Filter by file type")
+    filter_file_type: Optional[FileTypeEnum] = Field(
+        None, description="Filter by file type"
+    )
     filter_doc_id: Optional[str] = Field(None, description="Filter by document ID")
     filter_topics: Optional[list[str]] = Field(None, description="Filter by ML topics")
-    use_reranking: bool = Field(default=True, description="Apply cross-encoder reranking")
+    use_reranking: bool = Field(
+        default=True, description="Apply cross-encoder reranking"
+    )
 
     @field_validator("query")
     @classmethod

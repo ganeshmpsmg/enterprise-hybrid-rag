@@ -2,6 +2,7 @@
 FastAPI Application Entry Point - Enterprise Hybrid RAG System.
 Handles startup, dependency wiring, and application lifecycle.
 """
+
 import logging
 import os
 import time
@@ -13,13 +14,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 
-
 from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
 from src.api.routes import router
 import src.api.routes as route_module
+
 load_dotenv()
 
 logger = logging.getLogger(__name__)
+
 
 # ── Application factory ──────────────────────────────────────
 def create_app() -> FastAPI:
@@ -122,7 +124,9 @@ async def _initialize_pipeline():
     from src.vectorstore.index_builder import IndexBuilder
 
     # Configuration from environment
-    embed_model_name = os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2")
+    embed_model_name = os.getenv(
+        "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+    )
     reranker_model = os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2")
     vector_store_type = os.getenv("VECTOR_STORE", "chroma")
     llm_provider = os.getenv("LLM_PROVIDER", "openai")
@@ -138,6 +142,7 @@ async def _initialize_pipeline():
         vector_store = FAISSManager(dimension=384)
     elif vector_store_type == "qdrant":
         from src.vectorstore.qdrant_manager import QdrantManager
+
         vector_store = QdrantManager(
             host=os.getenv("QDRANT_HOST", "localhost"),
             port=int(os.getenv("QDRANT_PORT", "6333")),
@@ -192,6 +197,7 @@ async def _initialize_pipeline():
     )
 
     from src.utils.ingestion_service import IngestionService
+
     ingestion_svc = IngestionService(
         index_builder=index_builder,
         sparse_retriever=sparse_retriever,
@@ -212,6 +218,7 @@ app = create_app()
 def main():
     """Entry point for running the server."""
     import uvicorn
+
     uvicorn.run(
         "src.api.main:app",
         host=os.getenv("API_HOST", "0.0.0.0"),

@@ -2,6 +2,7 @@
 Data Validator - Validates uploaded documents for quality, size, and format.
 Prevents corrupted, empty, or malicious files from entering the pipeline.
 """
+
 import logging
 import mimetypes
 from dataclasses import dataclass
@@ -24,6 +25,7 @@ ALLOWED_EXTENSIONS = {".pdf", ".docx", ".txt", ".md", ".markdown"}
 @dataclass
 class ValidationResult:
     """Result of document validation."""
+
     is_valid: bool
     errors: list[str]
     warnings: list[str]
@@ -110,13 +112,16 @@ class DocumentValidator:
         else:
             try:
                 import hashlib
+
                 sha256 = hashlib.sha256()
                 with open(path, "rb") as f:
                     for chunk in iter(lambda: f.read(8192), b""):
                         sha256.update(chunk)
                 doc_hash = sha256.hexdigest()
                 if doc_hash in self._known_hashes:
-                    warnings.append(f"Duplicate document detected (hash: {doc_hash[:8]}...)")
+                    warnings.append(
+                        f"Duplicate document detected (hash: {doc_hash[:8]}...)"
+                    )
                 else:
                     self._known_hashes.add(doc_hash)
             except Exception as e:
@@ -127,6 +132,7 @@ class DocumentValidator:
         if ext == ".pdf" and not errors:
             try:
                 from pypdf import PdfReader
+
                 reader = PdfReader(str(path))
                 page_count = len(reader.pages)
                 sample_text = ""

@@ -2,6 +2,7 @@
 Prompt Builder - Constructs LLM prompts for RAG answer generation.
 Handles context formatting, system prompts, and prompt templates.
 """
+
 import logging
 from dataclasses import dataclass
 from typing import Optional
@@ -12,6 +13,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class PromptConfig:
     """Configuration for prompt construction."""
+
     system_prompt: str
     max_context_length: int = 3000
     include_sources: bool = True
@@ -118,9 +120,7 @@ ANSWER:"""
 
         # Add current context + question
         context_str = self._format_context(context_chunks)
-        user_content = self.CONTEXT_TEMPLATE.format(
-            context=context_str, question=query
-        )
+        user_content = self.CONTEXT_TEMPLATE.format(context=context_str, question=query)
         messages.append({"role": "user", "content": user_content})
         return messages
 
@@ -150,7 +150,9 @@ ANSWER:"""
 
             # Respect max context length
             if total_chars + len(passage) > self.config.max_context_length and i > 1:
-                logger.debug(f"Context truncated at {i-1} passages ({total_chars} chars)")
+                logger.debug(
+                    f"Context truncated at {i-1} passages ({total_chars} chars)"
+                )
                 break
 
             passages.append(passage)

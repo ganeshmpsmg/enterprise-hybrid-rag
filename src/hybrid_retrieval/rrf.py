@@ -2,6 +2,7 @@
 Reciprocal Rank Fusion (RRF) - Combines multiple ranked lists into one.
 RRF is the standard method for merging dense + sparse retrieval results.
 """
+
 import logging
 from collections import defaultdict
 from typing import Optional
@@ -48,7 +49,9 @@ def reciprocal_rank_fusion(
         weights = [1.0] * len(ranked_lists)
 
     if len(weights) != len(ranked_lists):
-        raise ValueError(f"weights length ({len(weights)}) must match ranked_lists length ({len(ranked_lists)})")
+        raise ValueError(
+            f"weights length ({len(weights)}) must match ranked_lists length ({len(ranked_lists)})"
+        )
 
     # Normalize weights
     total_weight = sum(weights)
@@ -136,13 +139,17 @@ def weighted_score_fusion(
             if not chunk_id:
                 continue
             raw_score = result.get("score", 0)
-            norm_score = (raw_score - min_score) / score_range if normalize_scores else raw_score
+            norm_score = (
+                (raw_score - min_score) / score_range if normalize_scores else raw_score
+            )
             combined_scores[chunk_id] += weight * norm_score
 
             if chunk_id not in doc_info:
                 doc_info[chunk_id] = dict(result)
 
-    sorted_ids = sorted(combined_scores.keys(), key=lambda x: combined_scores[x], reverse=True)
+    sorted_ids = sorted(
+        combined_scores.keys(), key=lambda x: combined_scores[x], reverse=True
+    )
     results = []
     for rank, chunk_id in enumerate(sorted_ids):
         result = dict(doc_info[chunk_id])

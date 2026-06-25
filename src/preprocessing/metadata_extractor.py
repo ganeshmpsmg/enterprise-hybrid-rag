@@ -2,6 +2,7 @@
 Metadata Extractor - Extracts rich metadata from documents for filtering and search.
 Metadata enables precise filtering during retrieval (e.g., by author, topic, year).
 """
+
 import logging
 import re
 from dataclasses import dataclass, field
@@ -12,28 +13,99 @@ logger = logging.getLogger(__name__)
 
 # ML topic taxonomy for automatic classification
 ML_TOPICS = {
-    "deep_learning": ["neural network", "deep learning", "backpropagation", "activation function",
-                      "dropout", "batch normalization", "convolutional", "recurrent"],
-    "nlp": ["natural language", "text classification", "tokenization", "embedding", "transformer",
-            "attention", "bert", "gpt", "language model", "sentiment"],
-    "computer_vision": ["image classification", "object detection", "segmentation", "cnn",
-                        "convolutional", "resnet", "vision transformer", "yolo"],
-    "reinforcement_learning": ["reinforcement learning", "reward", "policy", "q-learning",
-                                "markov", "agent", "environment", "exploration"],
-    "optimization": ["gradient descent", "adam", "sgd", "learning rate", "optimizer",
-                     "loss function", "convergence", "regularization"],
-    "retrieval": ["retrieval", "search", "rag", "vector database", "embedding", "similarity",
-                  "dense retrieval", "sparse retrieval", "bm25", "faiss"],
-    "generative": ["generative", "gan", "vae", "diffusion", "llm", "gpt", "prompt",
-                   "fine-tuning", "instruction tuning"],
-    "evaluation": ["precision", "recall", "f1", "accuracy", "benchmark", "evaluation",
-                   "metric", "performance", "ablation"],
+    "deep_learning": [
+        "neural network",
+        "deep learning",
+        "backpropagation",
+        "activation function",
+        "dropout",
+        "batch normalization",
+        "convolutional",
+        "recurrent",
+    ],
+    "nlp": [
+        "natural language",
+        "text classification",
+        "tokenization",
+        "embedding",
+        "transformer",
+        "attention",
+        "bert",
+        "gpt",
+        "language model",
+        "sentiment",
+    ],
+    "computer_vision": [
+        "image classification",
+        "object detection",
+        "segmentation",
+        "cnn",
+        "convolutional",
+        "resnet",
+        "vision transformer",
+        "yolo",
+    ],
+    "reinforcement_learning": [
+        "reinforcement learning",
+        "reward",
+        "policy",
+        "q-learning",
+        "markov",
+        "agent",
+        "environment",
+        "exploration",
+    ],
+    "optimization": [
+        "gradient descent",
+        "adam",
+        "sgd",
+        "learning rate",
+        "optimizer",
+        "loss function",
+        "convergence",
+        "regularization",
+    ],
+    "retrieval": [
+        "retrieval",
+        "search",
+        "rag",
+        "vector database",
+        "embedding",
+        "similarity",
+        "dense retrieval",
+        "sparse retrieval",
+        "bm25",
+        "faiss",
+    ],
+    "generative": [
+        "generative",
+        "gan",
+        "vae",
+        "diffusion",
+        "llm",
+        "gpt",
+        "prompt",
+        "fine-tuning",
+        "instruction tuning",
+    ],
+    "evaluation": [
+        "precision",
+        "recall",
+        "f1",
+        "accuracy",
+        "benchmark",
+        "evaluation",
+        "metric",
+        "performance",
+        "ablation",
+    ],
 }
 
 
 @dataclass
 class DocumentMetadata:
     """Rich metadata extracted from a document."""
+
     file_name: str
     file_type: str
     file_size_bytes: int
@@ -53,7 +125,9 @@ class DocumentMetadata:
     has_figures: bool = False
     has_tables: bool = False
     publication_year: Optional[int] = None
-    extraction_timestamp: str = field(default_factory=lambda: datetime.utcnow().isoformat())
+    extraction_timestamp: str = field(
+        default_factory=lambda: datetime.utcnow().isoformat()
+    )
     source_path: str = ""
     arxiv_id: Optional[str] = None
     doi: Optional[str] = None
@@ -107,7 +181,16 @@ class MetadataExtractor:
         re.DOTALL | re.IGNORECASE,
     )
 
-    def extract(self, text, file_name, file_type, file_size_bytes, doc_id, existing_metadata=None, total_pages=1) -> DocumentMetadata:
+    def extract(
+        self,
+        text,
+        file_name,
+        file_type,
+        file_size_bytes,
+        doc_id,
+        existing_metadata=None,
+        total_pages=1,
+    ) -> DocumentMetadata:
         existing = existing_metadata or {}
         meta = DocumentMetadata(
             file_name=file_name,
@@ -125,7 +208,7 @@ class MetadataExtractor:
         meta.has_abstract = meta.abstract is not None
         meta.publication_year = self._extract_year(text, existing)
         meta.topics = self._classify_topics(text)
-        
+
         meta.content_quality = self._assess_quality(text, meta)
         meta.readability_score = self._compute_readability(text)
         return meta
@@ -151,7 +234,7 @@ class MetadataExtractor:
             year_match = re.search(r"(20\d{2}|19\d{2})", str(creation_date))
             if year_match:
                 return int(year_match.group(1))
-        
+
         matches = self.YEAR_PATTERN.findall(text[:500])
         if matches:
             years = [int(y) for y in matches if 1990 <= int(y) <= datetime.now().year]
@@ -185,7 +268,7 @@ class MetadataExtractor:
             score += 1
         if meta.section_count > 3:
             score += 1
-        
+
         if score >= 7:
             return "high"
         if score >= 4:

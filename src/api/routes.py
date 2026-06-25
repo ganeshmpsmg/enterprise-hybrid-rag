@@ -10,8 +10,14 @@ from pathlib import Path
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
 from src.api.schemas import (
-    AskRequest, AskResponse, ChunkResult, Citation,
-    HealthResponse, SearchRequest, SearchResponse, UploadResponse,
+    AskRequest,
+    AskResponse,
+    ChunkResult,
+    Citation,
+    HealthResponse,
+    SearchRequest,
+    SearchResponse,
+    UploadResponse,
 )
 
 logger = logging.getLogger(__name__)
@@ -100,7 +106,9 @@ async def upload_document(
 
     max_size = 50 * 1024 * 1024  # 50MB
     if len(content) > max_size:
-        raise HTTPException(413, f"File too large: {len(content)/(1024*1024):.1f}MB > 50MB limit")
+        raise HTTPException(
+            413, f"File too large: {len(content)/(1024*1024):.1f}MB > 50MB limit"
+        )
 
     # Process document
     svc = get_ingestion()
@@ -159,7 +167,7 @@ async def search(request: SearchRequest):
             )
             results = reranked
         else:
-            results = results[:request.top_k]
+            results = results[: request.top_k]
 
         elapsed_ms = (time.perf_counter() - t0) * 1000
         chunk_results = [
@@ -224,8 +232,7 @@ async def ask(request: AskRequest):
     except Exception as e:
         logger.error(f"Ask failed: {e}", exc_info=True)
         raise HTTPException(
-            status_code=500,
-            detail=f"Answer generation failed: {str(e)}"
+            status_code=500, detail=f"Answer generation failed: {str(e)}"
         )
 
 

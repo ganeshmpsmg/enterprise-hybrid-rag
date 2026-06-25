@@ -2,6 +2,7 @@
 Recursive Chunker - LangChain-style recursive character text splitter.
 Best general-purpose chunker: splits on paragraphs, then sentences, then words.
 """
+
 import logging
 from typing import Optional
 from src.chunking.chunker import BaseChunker, Chunk
@@ -91,7 +92,10 @@ class RecursiveChunker(BaseChunker):
         """Recursively split text using the separator hierarchy."""
         if not separators:
             # Base case: character-level split
-            return [text[i:i+self.chunk_size] for i in range(0, len(text), self.chunk_size)]
+            return [
+                text[i : i + self.chunk_size]
+                for i in range(0, len(text), self.chunk_size)
+            ]
 
         separator = separators[0]
         remaining_separators = separators[1:]

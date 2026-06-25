@@ -2,6 +2,7 @@
 Qdrant Manager - Production-grade vector database with advanced filtering.
 Best for: production deployments, complex filters, scalability, deletions.
 """
+
 import logging
 import uuid
 from typing import Optional
@@ -21,7 +22,7 @@ class QdrantManager(VectorStore):
         api_key: Optional[str] = None,
         distance: str = "Cosine",  # Cosine | Euclid | Dot
         dimension: int = 384,
-        on_disk: bool = False,     # Store vectors on disk (for large collections)
+        on_disk: bool = False,  # Store vectors on disk (for large collections)
     ):
         self.collection_name = collection_name
         self.host = host
@@ -46,9 +47,7 @@ class QdrantManager(VectorStore):
                 "qdrant-client not installed. Run: pip install qdrant-client"
             )
 
-        logger.info(
-            f"Connecting to Qdrant at {self.host}:{self.port}"
-        )
+        logger.info(f"Connecting to Qdrant at {self.host}:{self.port}")
 
         self._client = QdrantClient(
             host=self.host,
@@ -75,10 +74,7 @@ class QdrantManager(VectorStore):
 
         dist = dist_map.get(self.distance, Distance.COSINE)
 
-        existing = [
-            c.name
-            for c in self._client.get_collections().collections
-        ]
+        existing = [c.name for c in self._client.get_collections().collections]
 
         if self.collection_name not in existing:
             self._client.create_collection(
@@ -99,10 +95,7 @@ class QdrantManager(VectorStore):
                 f"(dim={self.dimension})"
             )
         else:
-            logger.info(
-                f"Using existing Qdrant collection: "
-                f"{self.collection_name}"
-            )
+            logger.info(f"Using existing Qdrant collection: " f"{self.collection_name}")
 
     def add_embeddings(
         self,
@@ -118,19 +111,23 @@ class QdrantManager(VectorStore):
             return 0
 
         points = []
-        for chunk_id, emb, content, meta in zip(chunk_ids, embeddings, contents, metadatas):
+        for chunk_id, emb, content, meta in zip(
+            chunk_ids, embeddings, contents, metadatas
+        ):
             point_id = self._to_qdrant_id(chunk_id)
             payload = {**meta, "content": content, "chunk_id": chunk_id}
-            points.append(PointStruct(
-                id=point_id,
-                vector=emb.tolist(),
-                payload=payload,
-            ))
+            points.append(
+                PointStruct(
+                    id=point_id,
+                    vector=emb.tolist(),
+                    payload=payload,
+                )
+            )
 
         batch_size = 100
         added = 0
         for i in range(0, len(points), batch_size):
-            batch = points[i:i + batch_size]
+            batch = points[i : i + batch_size]
             try:
                 self.client.upsert(collection_name=self.collection_name, points=batch)
                 added += len(batch)
@@ -153,7 +150,9 @@ class QdrantManager(VectorStore):
         if filter_metadata:
             conditions = []
             for key, value in filter_metadata.items():
-                conditions.append(FieldCondition(key=key, match=MatchValue(value=value)))
+                conditions.append(
+                    FieldCondition(key=key, match=MatchValue(value=value))
+                )
             query_filter = Filter(must=conditions)
 
         try:
@@ -171,19 +170,22 @@ class QdrantManager(VectorStore):
         search_results = []
         for rank, hit in enumerate(results):
             payload = hit.payload or {}
-            search_results.append(SearchResult(
-                chunk_id=payload.get("chunk_id", str(hit.id)),
-                doc_id=payload.get("doc_id", ""),
-                content=payload.get("content", ""),
-                score=round(hit.score, 4),
-                metadata={k: v for k, v in payload.items() if k != "content"},
-                rank=rank,
-            ))
+            search_results.append(
+                SearchResult(
+                    chunk_id=payload.get("chunk_id", str(hit.id)),
+                    doc_id=payload.get("doc_id", ""),
+                    content=payload.get("content", ""),
+                    score=round(hit.score, 4),
+                    metadata={k: v for k, v in payload.items() if k != "content"},
+                    rank=rank,
+                )
+            )
         return search_results
 
     def delete_by_doc_id(self, doc_id: str) -> int:
         """Delete all points with matching doc_id payload field."""
         from qdrant_client.models import Filter, FieldCondition, MatchValue
+
         try:
             result = self.client.delete(
                 collection_name=self.collection_name,

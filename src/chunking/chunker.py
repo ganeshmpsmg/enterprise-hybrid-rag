@@ -2,6 +2,7 @@
 Base Chunker - Abstract base class defining the chunking interface.
 All chunking strategies implement this interface for pipeline consistency.
 """
+
 import logging
 from abc import ABC, abstractmethod
 from dataclasses import dataclass, field
@@ -16,12 +17,13 @@ class Chunk:
     A single text chunk with full provenance metadata.
     This is the atomic unit passed through the retrieval pipeline.
     """
+
     chunk_id: str
     doc_id: str
     content: str
-    chunk_index: int           # Position in document
-    start_char: int            # Character offset start in original doc
-    end_char: int              # Character offset end in original doc
+    chunk_index: int  # Position in document
+    start_char: int  # Character offset start in original doc
+    end_char: int  # Character offset end in original doc
     metadata: dict = field(default_factory=dict)  # Inherited + chunk-specific metadata
 
     @property
@@ -75,7 +77,9 @@ class BaseChunker(ABC):
         min_chunk_size: int = 50,
     ):
         if chunk_overlap >= chunk_size:
-            raise ValueError(f"chunk_overlap ({chunk_overlap}) must be < chunk_size ({chunk_size})")
+            raise ValueError(
+                f"chunk_overlap ({chunk_overlap}) must be < chunk_size ({chunk_size})"
+            )
         self.chunk_size = chunk_size
         self.chunk_overlap = chunk_overlap
         self.min_chunk_size = min_chunk_size

@@ -1,6 +1,7 @@
 """
 Grafana Dashboard - Auto-generates Grafana dashboard JSON for RAG monitoring.
 """
+
 import json
 from pathlib import Path
 
@@ -19,20 +20,24 @@ def generate_dashboard() -> dict:
                 "title": "Request Rate (req/s)",
                 "type": "graph",
                 "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
-                "targets": [{
-                    "expr": "rate(enterprise_rag_requests_total[1m])",
-                    "legendFormat": "{{endpoint}}",
-                }],
+                "targets": [
+                    {
+                        "expr": "rate(enterprise_rag_requests_total[1m])",
+                        "legendFormat": "{{endpoint}}",
+                    }
+                ],
             },
             {
                 "id": 2,
                 "title": "P95 Latency (ms)",
                 "type": "graph",
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
-                "targets": [{
-                    "expr": "histogram_quantile(0.95, rate(enterprise_rag_request_duration_seconds_bucket[5m])) * 1000",
-                    "legendFormat": "P95 {{endpoint}}",
-                }],
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, rate(enterprise_rag_request_duration_seconds_bucket[5m])) * 1000",
+                        "legendFormat": "P95 {{endpoint}}",
+                    }
+                ],
             },
             {
                 "id": 3,
@@ -53,20 +58,24 @@ def generate_dashboard() -> dict:
                 "title": "Pipeline Stage Latency",
                 "type": "graph",
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
-                "targets": [{
-                    "expr": "histogram_quantile(0.95, rate(enterprise_rag_query_stage_duration_seconds_bucket[5m])) * 1000",
-                    "legendFormat": "{{stage}} P95",
-                }],
+                "targets": [
+                    {
+                        "expr": "histogram_quantile(0.95, rate(enterprise_rag_query_stage_duration_seconds_bucket[5m])) * 1000",
+                        "legendFormat": "{{stage}} P95",
+                    }
+                ],
             },
             {
                 "id": 6,
                 "title": "Error Rate",
                 "type": "graph",
                 "gridPos": {"h": 8, "w": 12, "x": 0, "y": 16},
-                "targets": [{
-                    "expr": "rate(enterprise_rag_errors_total[5m])",
-                    "legendFormat": "{{error_type}}",
-                }],
+                "targets": [
+                    {
+                        "expr": "rate(enterprise_rag_errors_total[5m])",
+                        "legendFormat": "{{error_type}}",
+                    }
+                ],
             },
         ],
     }

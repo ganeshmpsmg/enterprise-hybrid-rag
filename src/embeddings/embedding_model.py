@@ -2,6 +2,7 @@
 Embedding Model - Wraps sentence-transformers for production use.
 Handles model loading, batching, caching, and device management.
 """
+
 import hashlib
 import logging
 import time
@@ -47,7 +48,7 @@ class EmbeddingModel:
         self.normalize = normalize
         self.cache_size = cache_size
         self.max_seq_length = max_seq_length
-        self._model = None   # Lazy load
+        self._model = None  # Lazy load
         self._cache: dict[str, np.ndarray] = {}  # Simple LRU cache
         self._cache_order: list[str] = []
         self._embed_count = 0
@@ -147,6 +148,7 @@ class EmbeddingModel:
         """Load the SentenceTransformer model."""
         try:
             from sentence_transformers import SentenceTransformer
+
             logger.info(f"Loading embedding model: {self.model_name} on {self.device}")
             t0 = time.perf_counter()
             self._model = SentenceTransformer(self.model_name, device=self.device)
@@ -167,7 +169,7 @@ class EmbeddingModel:
         """Run model inference in batches."""
         all_embeddings = []
         for i in range(0, len(texts), self.batch_size):
-            batch = texts[i:i + self.batch_size]
+            batch = texts[i : i + self.batch_size]
             embeddings = self.model.encode(
                 batch,
                 batch_size=len(batch),
@@ -195,6 +197,7 @@ class EmbeddingModel:
         """Auto-select best available device."""
         try:
             import torch
+
             if torch.cuda.is_available():
                 return "cuda"
             if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():

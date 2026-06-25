@@ -2,6 +2,7 @@
 Answer Generator - Orchestrates LLM answer generation for the RAG pipeline.
 Takes context and query, returns structured answer with citations.
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RAGAnswer:
     """Structured answer from the RAG pipeline."""
+
     query: str
     answer: str
     citations: list[dict]
@@ -122,13 +124,21 @@ class AnswerGenerator:
             model=self.llm.provider,
             metadata={
                 "context_chars": sum(len(c.get("content", "")) for c in context_chunks),
-                "top_score": ranked_results[0].get("final_score", ranked_results[0].get("score", 0)) if ranked_results else 0,
+                "top_score": (
+                    ranked_results[0].get(
+                        "final_score", ranked_results[0].get("score", 0)
+                    )
+                    if ranked_results
+                    else 0
+                ),
             },
         )
 
     def get_stats(self) -> dict:
         return {
             "total_answers": self._total_answers,
-            "avg_generation_ms": round(self._total_time / max(self._total_answers, 1), 2),
+            "avg_generation_ms": round(
+                self._total_time / max(self._total_answers, 1), 2
+            ),
             **self.llm.get_stats(),
         }

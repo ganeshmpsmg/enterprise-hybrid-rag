@@ -1,6 +1,7 @@
 """
 Prometheus Metrics - Exposes RAG system metrics for Prometheus scraping.
 """
+
 import logging
 
 logger = logging.getLogger(__name__)
@@ -9,9 +10,14 @@ logger = logging.getLogger(__name__)
 try:
     # Removed unused 'Summary' import to fix F401 error
     from prometheus_client import (
-        Counter, Gauge, Histogram,
-        REGISTRY, generate_latest, CONTENT_TYPE_LATEST
+        Counter,
+        Gauge,
+        Histogram,
+        REGISTRY,
+        generate_latest,
+        CONTENT_TYPE_LATEST,
     )
+
     PROMETHEUS_AVAILABLE = True
 except ImportError:
     PROMETHEUS_AVAILABLE = False
@@ -79,9 +85,13 @@ class RAGMetrics:
         )
         self._initialized = True
 
-    def record_request(self, endpoint: str, method: str, status_code: int, duration: float):
+    def record_request(
+        self, endpoint: str, method: str, status_code: int, duration: float
+    ):
         if self._initialized:
-            self.request_count.labels(endpoint=endpoint, method=method, status_code=str(status_code)).inc()
+            self.request_count.labels(
+                endpoint=endpoint, method=method, status_code=str(status_code)
+            ).inc()
             self.request_duration.labels(endpoint=endpoint).observe(duration)
 
     def record_retrieval(self, stage: str, duration: float, result_count: int = 0):

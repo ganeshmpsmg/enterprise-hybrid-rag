@@ -1,6 +1,7 @@
 """
 Benchmark - Full RAG system benchmarking with configurable test sets.
 """
+
 import json
 import logging
 import time
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class BenchmarkResult:
     """Complete benchmark result."""
+
     retrieval_metrics: dict
     ragas_metrics: dict
     latency_stats: dict
@@ -69,7 +71,9 @@ class RAGBenchmark:
         self.pipeline = rag_pipeline
         self.ragas = ragas_evaluator or RAGASEvaluator()
 
-    def run(self, test_data: list[dict], max_samples: Optional[int] = None) -> BenchmarkResult:
+    def run(
+        self, test_data: list[dict], max_samples: Optional[int] = None
+    ) -> BenchmarkResult:
         """Run full benchmark."""
         samples = test_data[:max_samples] if max_samples else test_data
         logger.info(f"Running benchmark on {len(samples)} samples...")
@@ -88,14 +92,19 @@ class RAGBenchmark:
                 answers.append(response.answer)
                 contexts.append([c.get("content", "") for c in response.citations])
                 ground_truths.append(sample.get("ground_truth", ""))
-                retrieved_ids.append([c.get("chunk_id", "") for c in response.citations])
+                retrieved_ids.append(
+                    [c.get("chunk_id", "") for c in response.citations]
+                )
                 relevant_ids.append(set(sample.get("relevant_doc_ids", [])))
             except Exception as e:
                 logger.warning(f"Sample failed: {e}")
 
         import numpy as np
+
         retrieval = evaluate_retrieval(questions, retrieved_ids, relevant_ids)
-        ragas_result = self.ragas.evaluate(questions, answers, contexts, ground_truths or None)
+        ragas_result = self.ragas.evaluate(
+            questions, answers, contexts, ground_truths or None
+        )
 
         latency_arr = np.array(latencies) if latencies else np.array([0])
         latency_stats = {

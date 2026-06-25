@@ -4,6 +4,7 @@ RAG Pipeline - Complete end-to-end Retrieval-Augmented Generation pipeline.
 Full pipeline:
 Query -> Expansion -> Hybrid Retrieval -> Reranking -> Context Building -> LLM -> Answer
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -20,6 +21,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class RAGResponse:
     """Complete RAG system response with full pipeline metadata."""
+
     query: str
     answer: str
     citations: list[dict]
@@ -117,8 +119,9 @@ class RAGPipeline:
                 filter_metadata=filter_metadata,
             )
         except Exception as e:
-            
+
             import traceback
+
             traceback.print_exc()
 
             logger.error(f"Hybrid retrieval failed: {repr(e)}")
@@ -133,7 +136,9 @@ class RAGPipeline:
                 citations=[],
                 context_chunks_used=0,
                 pipeline_metadata={"timings": timings, "stage_failed": "retrieval"},
-                total_latency_ms=round((time.perf_counter() - pipeline_start) * 1000, 2),
+                total_latency_ms=round(
+                    (time.perf_counter() - pipeline_start) * 1000, 2
+                ),
             )
 
         # ── Stage 3: Reranking ────────────────────────
@@ -159,8 +164,9 @@ class RAGPipeline:
                 conversation_history=conversation_history,
             )
         except Exception as e:
-            
+
             import traceback
+
             traceback.print_exc()
 
             logger.error(f"Answer generation failed: {repr(e)}")

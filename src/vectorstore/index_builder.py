@@ -2,6 +2,7 @@
 Index Builder - Orchestrates the full indexing pipeline from chunks to vector store.
 Coordinates embedding generation and vector store insertion.
 """
+
 import logging
 import time
 from dataclasses import dataclass
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class IndexingResult:
     """Result of an indexing operation."""
+
     doc_id: str
     chunks_indexed: int
     embeddings_generated: int
@@ -76,15 +78,16 @@ class IndexBuilder:
                 for ec in embed_result.embedded_chunks
             ]
             import numpy as np
+
             embeddings = np.array([ec.embedding for ec in embed_result.embedded_chunks])
 
             # 3. Add to vector store
-            added = self.vector_store.add_embeddings(chunk_ids, embeddings, contents, metadatas)
+            added = self.vector_store.add_embeddings(
+                chunk_ids, embeddings, contents, metadatas
+            )
 
             elapsed = time.perf_counter() - t0
-            logger.info(
-                f"Indexed doc {doc_id[:8]}: {added} chunks in {elapsed:.2f}s"
-            )
+            logger.info(f"Indexed doc {doc_id[:8]}: {added} chunks in {elapsed:.2f}s")
             return IndexingResult(
                 doc_id=doc_id,
                 chunks_indexed=added,

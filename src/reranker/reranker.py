@@ -1,6 +1,7 @@
 """
 Reranker - High-level reranking interface with score normalization.
 """
+
 import logging
 from typing import Optional
 from src.reranker.cross_encoder import CrossEncoderReranker

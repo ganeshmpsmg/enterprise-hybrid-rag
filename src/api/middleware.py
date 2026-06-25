@@ -1,6 +1,7 @@
 """
 API Middleware - Request logging, rate limiting, CORS, and error handling.
 """
+
 import logging
 import time
 import uuid
@@ -54,17 +55,20 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         # Clean old requests
         if client_ip in self._requests:
             self._requests[client_ip] = [
-                t for t in self._requests[client_ip]
-                if now - t < self.window_seconds
+                t for t in self._requests[client_ip] if now - t < self.window_seconds
             ]
 
         request_times = self._requests.get(client_ip, [])
 
         if len(request_times) >= self.max_requests:
             from fastapi.responses import JSONResponse
+
             return JSONResponse(
                 status_code=429,
-                content={"error": "Rate limit exceeded", "retry_after": self.window_seconds},
+                content={
+                    "error": "Rate limit exceeded",
+                    "retry_after": self.window_seconds,
+                },
             )
 
         request_times.append(now)

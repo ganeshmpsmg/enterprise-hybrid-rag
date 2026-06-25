@@ -2,6 +2,7 @@
 Hybrid Retriever - Combines dense (semantic) and sparse (BM25) retrieval with RRF.
 This is the core retrieval component of the Enterprise RAG system.
 """
+
 import logging
 import time
 from dataclasses import dataclass, field
@@ -17,6 +18,7 @@ logger = logging.getLogger(__name__)
 @dataclass
 class HybridResult:
     """Unified result from hybrid retrieval."""
+
     chunk_id: str
     doc_id: str
     content: str
