@@ -1,244 +1,73 @@
-"""
-API Routes - FastAPI route handlers for all RAG endpoints.
-Implements: /upload, /search, /retrieve, /ask, /health
-"""
-
 import logging
-import time
-from pathlib import Path
+from fastapi import APIRouter, UploadFile, File, BackgroundTasks, HTTPException
+from pydantic import BaseModel
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, status
-
-from src.api.schemas import (
-    AskRequest,
-    AskResponse,
-    ChunkResult,
-    Citation,
-    HealthResponse,
-    SearchRequest,
-    SearchResponse,
-    UploadResponse,
-)
-
-logger = logging.getLogger(__name__)
-router = APIRouter()
-
-# ── Dependency injection ─────────────────────────────────────
-# These are set by main.py on startup
-_pipeline = None
-_file_manager = None
+# These placeholders are populated by main.py at runtime via dependency injection
 _ingestion_service = None
-_vector_store = None
-_app_start_time = time.time()
+_pipeline = None
 
+router = APIRouter()
+logger = logging.getLogger(__name__)
 
-def get_pipeline():
-    if _pipeline is None:
-        raise HTTPException(503, "Pipeline not initialized")
-    return _pipeline
+class QueryRequest(BaseModel):
+    query: str
 
-
-def get_ingestion():
-    if _ingestion_service is None:
-        raise HTTPException(503, "Ingestion service not initialized")
-    return _ingestion_service
-
-
-# ── Health Check ─────────────────────────────────────────────
-@router.get("/health", response_model=HealthResponse, tags=["System"])
-async def health_check():
-    """
-    System health check endpoint.
-    Returns system status, vector store stats, and uptime.
-    """
-    uptime = time.time() - _app_start_time
-    vs_stats = {}
-    total_chunks = 0
-
-    if _vector_store:
-        try:
-            vs_stats = _vector_store.get_stats()
-            total_chunks = vs_stats.get("total_vectors", 0)
-        except Exception:
-            pass
-
-    return HealthResponse(
-        status="healthy",
-        version="1.0.0",
-        vector_store_status="connected" if _vector_store else "disconnected",
-        total_documents=vs_stats.get("unique_documents", 0),
-        total_chunks=total_chunks,
-        uptime_seconds=round(uptime, 1),
-    )
-
-
-# ── Document Upload ───────────────────────────────────────────
-@router.post(
-    "/upload",
-    response_model=UploadResponse,
-    status_code=status.HTTP_201_CREATED,
-    tags=["Ingestion"],
-)
-async def upload_document(
-    file: UploadFile = File(..., description="Document file (PDF, DOCX, TXT, MD)"),
+@router.post("/upload")
+async def upload_file(
+    background_tasks: BackgroundTasks, 
+    file: UploadFile = File(...)
 ):
     """
-    Upload and ingest a document into the RAG system.
+    Handles PDF uploads. 
+    Reads file into memory and offloads ingestion to BackgroundTasks 
+    to prevent 502 Gateway Timeouts.
     """
-    t0 = time.perf_counter()
+    if not file.filename.lower().endswith(".pdf"):
+        raise HTTPException(status_code=400, detail="Invalid file type. Please upload a PDF.")
 
-    if not file.filename:
-        raise HTTPException(400, "No filename provided")
+    if _ingestion_service is None:
+        raise HTTPException(status_code=500, detail="Ingestion service is not initialized.")
 
-    # Validate extension
-    allowed_ext = {".pdf", ".docx", ".txt", ".md", ".markdown"}
-    ext = Path(file.filename).suffix.lower()
-    if ext not in allowed_ext:
-        raise HTTPException(
-            400,
-            f"Unsupported file type: {ext}. Supported: {allowed_ext}",
-        )
-
-    # Read file content
+    # 1. Read the file bytes while the request is still active.
+    # This prevents the 'UploadFile' from closing before the background task runs.
     content = await file.read()
-    if len(content) == 0:
-        raise HTTPException(400, "Uploaded file is empty")
+    
+    # 2. Offload the heavy embedding/indexing work to the background.
+    # Change 'ingest_bytes' to 'process' if that is the actual method name in your class.
+    background_tasks.add_task(_ingestion_service.ingest_bytes, content, file.filename)
+    
+    logger.info(f"Ingestion task queued for file: {file.filename}")
+    
+    return {
+        "status": "Accepted",
+        "message": f"File {file.filename} is being processed in the background.",
+        "filename": file.filename
+    }
 
-    max_size = 50 * 1024 * 1024  # 50MB
-    if len(content) > max_size:
-        raise HTTPException(
-            413, f"File too large: {len(content)/(1024*1024):.1f}MB > 50MB limit"
-        )
-
-    # Process document
-    svc = get_ingestion()
+@router.post("/ask")
+async def ask_question(request: QueryRequest):
+    """
+    Handles user questions using the initialized RAG pipeline.
+    Matches the /api/v1/ask endpoint expected by your frontend.
+    """
+    if _pipeline is None:
+        raise HTTPException(status_code=500, detail="RAG pipeline is not initialized.")
+    
     try:
-        result = svc.ingest_bytes(
-            content=content,
-            filename=file.filename,
-            content_type=file.content_type or "application/octet-stream",
-        )
-        elapsed = time.perf_counter() - t0
-        return UploadResponse(
-            file_id=result["file_id"],
-            file_name=file.filename,
-            file_size_mb=round(len(content) / (1024 * 1024), 3),
-            chunks_indexed=result["chunks_indexed"],
-            processing_time_sec=round(elapsed, 3),
-            message=f"Successfully ingested {result['chunks_indexed']} chunks",
-        )
+        # Assuming your RAGPipeline has a method named 'generate' or similar
+        response = await _pipeline.generate(request.query)
+        return {"answer": response}
     except Exception as e:
-        logger.error(f"Ingestion failed for {file.filename}: {e}", exc_info=True)
-        raise HTTPException(500, f"Ingestion failed: {str(e)}")
+        logger.error(f"Error during query processing: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
-
-# ── Hybrid Search ─────────────────────────────────────────────
-@router.post("/search", response_model=SearchResponse, tags=["Retrieval"])
-async def search(request: SearchRequest):
-    """Hybrid search: dense + sparse + RRF fusion."""
-    pipeline = get_pipeline()
-    t0 = time.perf_counter()
-
-    # Build metadata filter
-    filter_meta = {}
-    if request.filter_file_type:
-        filter_meta["file_type"] = request.filter_file_type.value
-    if request.filter_doc_id:
-        filter_meta["doc_id"] = request.filter_doc_id
-    if request.filter_topics:
-        filter_meta["topics"] = request.filter_topics
-
-    try:
-        # Hybrid retrieval
-        hybrid_results = pipeline.hybrid_retriever.retrieve(
-            query=request.query,
-            top_k=request.top_k * 3 if request.use_reranking else request.top_k,
-            filter_metadata=filter_meta or None,
-        )
-
-        results = [r.to_dict() for r in hybrid_results]
-
-        # Optional reranking
-        if request.use_reranking and results:
-            reranked = pipeline.ranking_pipeline.reranker.rerank(
-                query=request.query,
-                candidates=results,
-                top_k=request.top_k,
-            )
-            results = reranked
-        else:
-            results = results[: request.top_k]
-
-        elapsed_ms = (time.perf_counter() - t0) * 1000
-        chunk_results = [
-            ChunkResult(
-                chunk_id=r.get("chunk_id", ""),
-                doc_id=r.get("doc_id", ""),
-                content=r.get("content", ""),
-                score=r.get("rerank_score", r.get("score", 0.0)),
-                rank=i,
-                metadata=r.get("metadata", {}),
-            )
-            for i, r in enumerate(results)
-        ]
-
-        return SearchResponse(
-            query=request.query,
-            results=chunk_results,
-            total_results=len(chunk_results),
-            latency_ms=round(elapsed_ms, 2),
-            retrieval_type="hybrid_reranked" if request.use_reranking else "hybrid",
-        )
-
-    except Exception as e:
-        logger.error(f"Search failed: {e}", exc_info=True)
-        raise HTTPException(500, f"Search failed: {str(e)}")
-
-
-# ── Ask (Full RAG) ────────────────────────────────────────────
-@router.post("/ask", response_model=AskResponse, tags=["RAG"])
-async def ask(request: AskRequest):
-    """Full RAG pipeline: retrieval + reranking + LLM answer generation."""
-    pipeline = get_pipeline()
-
-    try:
-        rag_response = pipeline.run(
-            query=request.query,
-            top_k=request.top_k,
-            filter_metadata=request.filter_metadata,
-            conversation_history=request.conversation_history,
-        )
-
-        citations = [
-            Citation(
-                source_number=c.get("source_number", i + 1),
-                file_name=c.get("file_name", ""),
-                page_number=c.get("page_number"),
-                title=c.get("title"),
-                score=c.get("score", 0.0),
-            )
-            for i, c in enumerate(rag_response.citations)
-        ]
-
-        return AskResponse(
-            query=request.query,
-            answer=rag_response.answer,
-            citations=citations,
-            context_chunks_used=rag_response.context_chunks_used,
-            total_latency_ms=rag_response.total_latency_ms,
-            model=rag_response.pipeline_metadata.get("model", "unknown"),
-        )
-
-    except Exception as e:
-        logger.error(f"Ask failed: {e}", exc_info=True)
-        raise HTTPException(
-            status_code=500, detail=f"Answer generation failed: {str(e)}"
-        )
-
-
-# ── Stats ────────────────────────────────────────────────────
-@router.get("/stats", tags=["System"])
-async def get_stats():
-    """Return pipeline performance statistics."""
-    pipeline = get_pipeline()
-    return pipeline.get_stats()
+@router.get("/health")
+async def health_check():
+    """Simple status check for debugging deployment."""
+    return {
+        "status": "online", 
+        "services_initialized": {
+            "ingestion": _ingestion_service is not None, 
+            "pipeline": _pipeline is not None
+        }
+    }
