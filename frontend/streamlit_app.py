@@ -6,6 +6,7 @@ import requests
 # =========================
 st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
 
+# Ensure this is the correct URL for your live backend
 BACKEND_URL = "https://enterprise-hybrid-rag.onrender.com"
 
 # Initialize Session State
@@ -15,117 +16,77 @@ if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = []
 
 # =========================
-# SIDEBAR
+# FUNCTIONS
+# =========================
+def get_backend_status():
+    try:
+        response = requests.get(f"{BACKEND_URL}/api/v1/health", timeout=5)
+        return response.status_code == 200
+    except:
+        return False
+
+# =========================
+# UI LAYOUT
 # =========================
 with st.sidebar:
     st.title("📚 Enterprise Hybrid RAG")
-    st.markdown("---")
-
-    # System Status
-    try:
-        health = requests.get(f"{BACKEND_URL}/api/v1/health", timeout=3)
-        if health.status_code == 200:
-            st.success("Backend Online")
-        else:
-            st.error("Backend Error")
-    except Exception:
-        st.error("Backend Offline")
-
-    st.subheader("Uploaded Documents")
-    if not st.session_state.uploaded_files:
-        st.info("No documents uploaded")
+    if get_backend_status():
+        st.success("Backend Online")
     else:
-        for file in st.session_state.uploaded_files:
-            st.write(f"📄 {file}")
-
+        st.error("Backend Offline / 502 Error")
+        st.warning("Try refreshing in a minute. The free tier might be 'waking up'.")
+    
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
         st.rerun()
 
-# =========================
-# MAIN INTERFACE
-# =========================
 st.title("📚 Enterprise Hybrid RAG")
-st.caption("Production-grade Retrieval Augmented Generation System")
-st.markdown("---")
 
 # 1. Upload Section
-st.subheader("📤 Upload Documents")
 uploaded_file = st.file_uploader("Upload PDF Document", type=["pdf"])
-
 if uploaded_file and st.button("Upload PDF"):
-    with st.spinner("Uploading document..."):
+    with st.spinner("Processing document... (This may take a moment)"):
         try:
-            files = {
-                "file": (
-                    uploaded_file.name,
-                    uploaded_file.getvalue(),
-                    "application/pdf",
-                )
-            }
-            # Ensure your backend has a corresponding endpoint for this
-            response = requests.post(f"{BACKEND_URL}/api/v1/upload", files=files)
-
-            if response.status_code in [200, 201]:
-                st.success(f"Successfully uploaded {uploaded_file.name}")
-                if uploaded_file.name not in st.session_state.uploaded_files:
-                    st.session_state.uploaded_files.append(uploaded_file.name)
+            files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
+            # Increased timeout for file processing
+            response = requests.post(f"{BACKEND_URL}/api/v1/upload", files=files, timeout=300)
+            
+            if response.status_code == 200:
+                st.success(f"Uploaded {uploaded_file.name}")
             else:
-                st.error(f"Upload Failed: {response.text}")
+                st.error(f"Backend returned status {response.status_code}: {response.text}")
+        except requests.exceptions.Timeout:
+            st.error("Upload timed out. The server took too long to process the PDF.")
         except Exception as e:
-            st.exception(e)
+            st.error(f"Connection failed: {e}")
 
 # 2. Query Section
-st.subheader("💬 Ask Questions")
-query = st.text_input("Enter your question")
-
-if st.button("Ask") and query:
-    with st.spinner("Retrieving answer..."):
-        payload = {"query": query, "top_k": 5, "stream": False}
-        try:
-            response = requests.post(
-                f"{BACKEND_URL}/api/v1/ask", json=payload, timeout=120
-            )
-            if response.status_code == 200:
-                data = response.json()
-                st.session_state.messages.append({"question": query, "response": data})
-            else:
-                st.error(f"Error: {response.status_code} - {response.text}")
-        except Exception as e:
-            st.error(f"Connection Error: {e}")
+query = st.text_input("Ask a question about your documents:")
+if st.button("Ask"):
+    if not query:
+        st.warning("Please enter a question.")
+    else:
+        with st.spinner("Analyzing..."):
+            try:
+                # Increased timeout to 120s to allow backend to finish heavy inference
+                response = requests.post(
+                    f"{BACKEND_URL}/api/v1/ask", 
+                    json={"query": query, "top_k": 5}, 
+                    timeout=120
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    st.session_state.messages.insert(0, {"question": query, "response": data})
+                else:
+                    st.error(f"Server Error ({response.status_code}). Check if the backend logs indicate a crash.")
+            except requests.exceptions.Timeout:
+                st.error("The model took too long to respond. Try a shorter query.")
+            except Exception as e:
+                st.error(f"Error: {e}")
 
 # 3. Chat History
-for item in reversed(st.session_state.messages):
-    st.markdown("---")
-    st.markdown(f"### 🙋 Question\n{item['question']}")
-    data = item["response"]
-
-    st.markdown("### 🤖 Answer")
-    st.write(data.get("answer", "No answer returned"))
-
-    # Metrics
-    st.markdown("### 📊 Metrics")
-    col1, col2, col3 = st.columns(3)
-    with col1:
-        st.metric("Chunks Used", data.get("context_chunks_used", 0))
-    with col2:
-        latency = round(data.get("total_latency_ms", 0) / 1000, 2)
-        st.metric("Latency (s)", latency)
-    with col3:
-        st.metric("Model", data.get("model", "N/A"))
-
-    # Sources
-    st.markdown("### 📚 Sources")
-    citations = data.get("citations", [])
-    if not citations:
-        st.info("No citations returned")
-    else:
-        for index, citation in enumerate(citations, start=1):
-            with st.expander(f"Source {index}"):
-                st.write(f"📄 File: {citation.get('file_name', 'Unknown')}")
-                st.write(f"📄 Page: {citation.get('page_number', 'N/A')}")
-                st.write(f"📑 Title: {citation.get('title', 'N/A')}")
-                st.write(f"⭐ Score: {round(citation.get('score', 0), 5)}")
-
-st.markdown("---")
-st.caption("Enterprise Hybrid RAG • FastAPI • Ollama • Streamlit")
+for item in st.session_state.messages:
+    with st.container():
+        st.markdown(f"**Q:** {item['question']}")
+        st.write(item['response'].get("answer", "No content returned."))
+        st.divider()
