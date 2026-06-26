@@ -1,50 +1,70 @@
-from fastapi import APIRouter, HTTPException
-from starlette.concurrency import run_in_threadpool
-import logging
-from pydantic import BaseModel
+"""
+RAG Pipeline - Complete end-to-end Retrieval-Augmented Generation pipeline.
+"""
 
-# Global placeholder; main.py will inject the pipeline instance here
-_pipeline = None
+import logging
+from dataclasses import dataclass, field
+from typing import Optional
+
+# Importing necessary components
+from src.hybrid_retrieval.hybrid_retriever import HybridRetriever
+from src.hybrid_retrieval.query_expander import QueryExpander
+from src.llm.answer_generator import AnswerGenerator
+from src.reranker.ranking_pipeline import RankingPipeline
+
 logger = logging.getLogger(__name__)
 
-class QueryRequest(BaseModel):
-    query: str
+@dataclass
+class RAGResponse:
+    answer: str
+    citations: list[dict] = field(default_factory=list)
 
-router = APIRouter()
+    def to_dict(self):
+        return {
+            "answer": self.answer,
+            "citations": self.citations,
+        }
 
-@router.post("/ask")
-async def ask_question(request: QueryRequest):
-    """
-    Processes a RAG query. Uses run_in_threadpool to offload 
-    the synchronous .run() call.
-    """
-    global _pipeline
-    
-    if _pipeline is None:
-        raise HTTPException(
-            status_code=500,
-            detail="RAG pipeline is not initialized."
+class RAGPipeline:
+    def __init__(
+        self, 
+        hybrid_retriever: HybridRetriever, 
+        ranking_pipeline: RankingPipeline, 
+        answer_generator: AnswerGenerator, 
+        query_expander: QueryExpander
+    ):
+        self.hybrid_retriever = hybrid_retriever
+        self.ranking_pipeline = ranking_pipeline
+        self.answer_generator = answer_generator
+        self.query_expander = query_expander
+
+    def run(self, query: str) -> RAGResponse:
+        """
+        Executes the pipeline and returns a RAGResponse object.
+        """
+        # 1. Expand query
+        expanded_queries = self.query_expander.expand(query)
+
+        primary_query = expanded_queries[0] if expanded_queries else query
+
+        # 2. Retrieve and rerank
+        
+        ranked_results = self.ranking_pipeline.retrieve_and_rerank(
+            query=primary_query,
+            top_k=5,
         )
 
-    try:
-        # Offload synchronous execution to threadpool to avoid blocking FastAPI
-        response = await run_in_threadpool(
-            _pipeline.run,
-            query=request.query,
+        # Convert RankedResult objects to dictionaries
+        ranked_results = [r.to_dict() for r in ranked_results]
+
+        # 3. Generate answer
+        rag_answer = self.answer_generator.generate(
+            query=primary_query,
+            ranked_results=ranked_results,
         )
-
-        # Return the dictionary format as required by the RAGResponse dataclass
-        if hasattr(response, "to_dict"):
-            return response.to_dict()
         
-        return response
-
-    except Exception as e:
-        # Log the full traceback for your backend logs
-        logger.exception("Error processing /ask request")
-        
-        # Return the specific error to the client for debugging
-        raise HTTPException(
-            status_code=500,
-            detail=str(e)
+        # 4. Return as RAGResponse
+        return RAGResponse(
+            answer=rag_answer.answer,
+            citations=rag_answer.citations
         )

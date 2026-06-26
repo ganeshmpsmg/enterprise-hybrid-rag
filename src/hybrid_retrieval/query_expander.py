@@ -4,7 +4,7 @@ from typing import Optional
 
 logger = logging.getLogger(__name__)
 
-# ML/AI domain synonym dictionary
+# --- Dictionary Definitions ---
 ML_SYNONYMS = {
     "neural network": ["deep learning model", "artificial neural network"],
     "transformer": ["attention-based model", "BERT"],
@@ -29,53 +29,27 @@ ML_SYNONYMS = {
 }
 
 class QueryExpander:
-    """
-    Expands queries using domain-specific ML synonyms, acronyms, and decomposition.
-    """
+    """Expands queries using domain-specific ML synonyms, acronyms, and decomposition."""
     
     ML_ACRONYMS = {
-        "NLP": "natural language processing",
-        "CV": "computer vision",
-        "RL": "reinforcement learning",
-        "ML": "machine learning",
-        "DL": "deep learning",
-        "LLM": "large language model",
-        "RAG": "retrieval augmented generation",
-        "BERT": "bidirectional encoder representations transformers",
-        "GPT": "generative pre-trained transformer",
-        "CNN": "convolutional neural network",
-        "RNN": "recurrent neural network",
-        "LSTM": "long short-term memory",
-        "GAN": "generative adversarial network",
-        "VAE": "variational autoencoder",
-        "SVM": "support vector machine",
-        "KNN": "k nearest neighbors",
-        "PCA": "principal component analysis",
-        "FAISS": "facebook AI similarity search",
-        "BM25": "best match 25",
-        "MRR": "mean reciprocal rank",
+        "NLP": "natural language processing", "CV": "computer vision",
+        "RL": "reinforcement learning", "ML": "machine learning",
+        "DL": "deep learning", "LLM": "large language model",
+        "RAG": "retrieval augmented generation", "BERT": "bidirectional encoder representations transformers",
+        "GPT": "generative pre-trained transformer", "CNN": "convolutional neural network",
+        "RNN": "recurrent neural network", "LSTM": "long short-term memory",
+        "GAN": "generative adversarial network", "VAE": "variational autoencoder",
+        "SVM": "support vector machine", "KNN": "k nearest neighbors",
+        "PCA": "principal component analysis", "FAISS": "facebook AI similarity search",
+        "BM25": "best match 25", "MRR": "mean reciprocal rank",
         "NDCG": "normalized discounted cumulative gain",
     }
 
-    def __init__(
-        self,
-        use_synonyms: bool = True,
-        use_acronym_expansion: bool = True,
-        use_decomposition: bool = False,
-        max_expansions: int = 3,
-    ):
+    def __init__(self, use_synonyms=True, use_acronym_expansion=True, use_decomposition=False, max_expansions=3):
         self.use_synonyms = use_synonyms
         self.use_acronym_expansion = use_acronym_expansion
         self.use_decomposition = use_decomposition
         self.max_expansions = max_expansions
-
-    def expand_for_hybrid(self, query: str) -> dict:
-        """Generate query variants for hybrid retrieval."""
-        expanded = self.expand(query)
-        return {
-            "dense": expanded,
-            "sparse": [query],
-        }
 
     def expand(self, query: str) -> list[str]:
         """Generate expanded query variants."""
@@ -94,7 +68,6 @@ class QueryExpander:
             sub_queries = self._decompose_query(query)
             expansions.extend(sub_queries)
 
-        # Deduplicate while preserving order
         seen = set()
         unique = []
         for q in expansions:
@@ -105,16 +78,10 @@ class QueryExpander:
         return unique
 
     def _expand_acronyms(self, query: str) -> str:
-        """Replaces acronyms with 'ACRONYM (full form)' format."""
         result = query
         for acr, full in self.ML_ACRONYMS.items():
             pattern = rf"\b{re.escape(acr)}\b"
-            result = re.sub(
-                pattern, 
-                f"{acr} ({full})", 
-                result, 
-                flags=re.IGNORECASE
-            )
+            result = re.sub(pattern, f"{acr} ({full})", result, flags=re.IGNORECASE)
         return result
 
     def _expand_synonyms(self, query: str) -> list[str]:
@@ -138,38 +105,37 @@ class QueryExpander:
                     sub_queries.append(part)
         return sub_queries
 
-class QueryRewriter:
-    """LLM-based query rewriting."""
-    REWRITE_PROMPT = """You are a search query optimizer for machine learning documentation.
-Given the user query, generate {n} alternative search queries that:
-1. Preserve the original intent
-2. Use different vocabulary (synonyms, technical terms)
-3. Are concise and searchable
+# --- Pipeline Execution ---
+class RAGPipeline:
+    def __init__(self, query_expander, ranking_pipeline, answer_generator):
+        self.query_expander = query_expander
+        self.ranking_pipeline = ranking_pipeline
+        self.answer_generator = answer_generator
 
-Original query: {query}
-
-Return ONLY the alternative queries, one per line, no numbering or explanation."""
-
-    def __init__(
-        self,
-        llm_service=None,
-        n_rewrites: int = 2,
-        fallback_expander: Optional[QueryExpander] = None,
-    ):
-        self.llm_service = llm_service
-        self.n_rewrites = n_rewrites
-        self.fallback = fallback_expander or QueryExpander()
-
-    def rewrite(self, query: str) -> list[str]:
-        if self.llm_service:
-            try:
-                return self._llm_rewrite(query)
-            except Exception as e:
-                logger.warning(f"LLM rewrite failed: {e}. Using fallback.")
-        return self.fallback.expand(query)
-
-    def _llm_rewrite(self, query: str) -> list[str]:
-        prompt = self.REWRITE_PROMPT.format(query=query, n=self.n_rewrites)
-        response = self.llm_service.generate(prompt, max_tokens=200, temperature=0.3)
-        lines = [line.strip() for line in response.split("\n") if line.strip()]
-        return [query] + lines[: self.n_rewrites]
+    def run(self, query: str):
+        """
+        Executes the RAG pipeline with correct type handling.
+        """
+        # 1. Expand query using positional argument 'query'
+        expanded_queries = self.query_expander.expand(query)
+        primary_query = expanded_queries[0] if expanded_queries else query
+        
+        # 2. Retrieve and rerank
+        ranked_results = self.ranking_pipeline.retrieve_and_rerank(
+            query=primary_query,
+            top_k=5,
+        )
+        
+        # 3. Convert objects to dicts as expected by the generator
+        ranked_results_dicts = [r.to_dict() for r in ranked_results]
+        
+        # 4. Generate answer
+        rag_answer = self.answer_generator.generate(
+            query=primary_query,
+            ranked_results=ranked_results_dicts,
+        )
+        
+        return RAGResponse(
+            answer=rag_answer.answer,
+            citations=rag_answer.citations,
+        )

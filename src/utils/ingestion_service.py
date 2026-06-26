@@ -49,22 +49,15 @@ class IngestionService:
         self._indexed_docs: list[str] = []
         self._all_chunks: list = []
 
-    content = await file.read()
-    
-    background_tasks.add_task(
-        
-        _ingestion_service.ingest_bytes,
-        
-        content,
-        
-        file.filename,
-        file.content_type,   # optional but recommended
-        
-    )
+    def ingest_bytes(
+        self,
+        content: bytes,
+        filename: str,
+        content_type: str = "application/octet-stream",
+    ) -> dict:
         """
         Ingest document from raw bytes.
         """
-
         # Save to temp file for loaders that need file path
         ext = Path(filename).suffix
         with tempfile.NamedTemporaryFile(suffix=ext, delete=False) as tmp:
@@ -130,12 +123,6 @@ class IngestionService:
             chunk_ids=(self.sparse_retriever._chunk_ids + new_ids),
             metadatas=(self.sparse_retriever._metadatas + new_metas),
         )
-        print("=" * 50)
-        print("BM25 FIT COMPLETE")
-        print("Corpus size:", len(self.sparse_retriever._corpus))
-        print("Chunk IDs:", len(self.sparse_retriever._chunk_ids))
-        print("BM25 object:", self.sparse_retriever._bm25 is not None)
-        print("=" * 50)
 
         self._indexed_docs.append(doc.doc_id)
         self._all_chunks.extend(chunks)

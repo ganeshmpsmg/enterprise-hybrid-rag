@@ -85,7 +85,7 @@ async def _initialize_pipeline():
     from src.vectorstore.faiss_manager import FAISSManager
     from src.dense_retrieval.dense_retriever import DenseRetriever
     from src.sparse_retrieval.bm25_retriever import BM25Retriever
-    from src.hybrid_retrieval.hybrid_retrieval import HybridRetriever
+    from src.hybrid_retrieval.hybrid_retriever import HybridRetriever
     from src.hybrid_retrieval.query_expander import QueryExpander
     from src.reranker.reranker import Reranker
     from src.reranker.ranking_pipeline import RankingPipeline
