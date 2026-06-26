@@ -45,4 +45,5 @@ async def debug():
             "ingestion_initialized": _ingestion_service is not None,
         }
     except Exception:
-        return {"traceback": traceback.for
+        return {"traceback": traceback.format.exc()
+        }
