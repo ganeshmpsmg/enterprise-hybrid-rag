@@ -49,12 +49,18 @@ class IngestionService:
         self._indexed_docs: list[str] = []
         self._all_chunks: list = []
 
-    def ingest_bytes(
-        self,
-        content: bytes,
-        filename: str,
-        content_type: str = "application/octet-stream",
-    ) -> dict:
+    content = await file.read()
+    
+    background_tasks.add_task(
+        
+        _ingestion_service.ingest_bytes,
+        
+        content,
+        
+        file.filename,
+        file.content_type,   # optional but recommended
+        
+    )
         """
         Ingest document from raw bytes.
         """
