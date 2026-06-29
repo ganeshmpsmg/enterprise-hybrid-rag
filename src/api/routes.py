@@ -1,8 +1,10 @@
 import logging
-import traceback
+import os
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
+
+from src.api.schemas import HealthResponse
 
 # Global placeholders injected at runtime by main.py
 _pipeline = None
@@ -57,6 +59,18 @@ async def ask_question(request: QueryRequest):
     except Exception as e:
         logger.exception("Error processing /ask request")
         raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/health", response_model=HealthResponse)
+async def health():
+    global _pipeline, _ingestion_service
+    return {
+        "status": "ok",
+        "version": os.getenv("APP_VERSION", "1.0.0"),
+        "vector_store_status": "initialized" if _pipeline is not None else "uninitialized",
+        "total_documents": 0,
+        "total_chunks": 0,
+        "uptime_seconds": 0.0,
+    }
 
 @router.get("/ping")
 async def ping():
