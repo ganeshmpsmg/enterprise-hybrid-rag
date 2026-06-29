@@ -8,7 +8,12 @@ import requests
 st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
 
 BACKEND_URL = os.getenv("BACKEND_URL", "").rstrip("/")
-API_PREFIX = BACKEND_URL or ""
+if not BACKEND_URL:
+    BACKEND_URL = "http://localhost:8000"
+    BACKEND_WARNING = True
+else:
+    BACKEND_WARNING = False
+API_PREFIX = BACKEND_URL
 
 # Initialize Session State
 if "messages" not in st.session_state:
@@ -23,10 +28,10 @@ with st.sidebar:
     st.title("📚 Enterprise Hybrid RAG")
     st.markdown("---")
 
-    if not BACKEND_URL:
+    if BACKEND_WARNING:
         st.warning(
-            "BACKEND_URL is not configured. Using relative API paths to /api/v1/* "
-            "from the Streamlit host. Set BACKEND_URL if a separate backend is deployed."
+            "BACKEND_URL is not configured. Using http://localhost:8000 as the default backend. "
+            "Set BACKEND_URL if the backend is deployed separately."
         )
 
     try:
