@@ -66,7 +66,8 @@ class BM25Retriever:
         Searches the BM25 index for the top_k most relevant chunks.
         """
         if self._bm25 is None:
-            raise RuntimeError("BM25 index not built. Call fit() first.")
+            logger.warning("BM25 index not built; returning empty sparse results.")
+            return []
 
         tokenized_query = self._tokenize(query)
 
