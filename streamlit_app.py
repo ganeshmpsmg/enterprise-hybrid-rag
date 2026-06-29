@@ -14,7 +14,7 @@ if BACKEND_URL:
     backend_status = "configured"
 elif BACKEND_LOCAL_FALLBACK:
     API_PREFIX = "http://localhost:8000"
-    backend_status = "local_fallback"
+    backend_status = "https://enterprise-hybrid-rag.onrender.com"
 else:
     API_PREFIX = None
     backend_status = "unset"
