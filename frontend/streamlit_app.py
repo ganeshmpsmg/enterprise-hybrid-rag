@@ -1,3 +1,4 @@
+import os
 import streamlit as st
 import requests
 
@@ -6,7 +7,8 @@ import requests
 # =========================
 st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
 
-BACKEND_URL = "https://enterprise-hybrid-rag.onrender.com"
+BACKEND_URL = os.getenv("BACKEND_URL", "").rstrip("/")
+API_PREFIX = BACKEND_URL or ""
 
 # Initialize Session State
 if "messages" not in st.session_state:
@@ -19,14 +21,23 @@ if "uploaded_files" not in st.session_state:
 # =========================
 with st.sidebar:
     st.title("📚 Enterprise Hybrid RAG")
+    st.markdown("---")
+
+    if not BACKEND_URL:
+        st.warning(
+            "BACKEND_URL is not configured. Using relative API paths to /api/v1/* "
+            "from the Streamlit host. Set BACKEND_URL if a separate backend is deployed."
+        )
+
     try:
-        health = requests.get(f"{BACKEND_URL}/api/v1/health", timeout=5)
+        health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
         if health.status_code == 200:
             st.success("Backend Online")
         else:
             st.error(f"Backend Error: {health.status_code}")
-    except Exception:
-        st.error("Backend Offline")
+            st.code(health.text)
+    except Exception as e:
+        st.error(f"Backend Offline: {e}")
 
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
@@ -45,7 +56,7 @@ if uploaded_file and st.button("Upload PDF"):
     with st.spinner("Uploading and processing document..."):
         try:
             files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
-            response = requests.post(f"{BACKEND_URL}/api/v1/upload", files=files, timeout=300)
+            response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
 
             if response.status_code in [200, 201]:
                 st.success(f"Successfully uploaded {uploaded_file.name}")
@@ -66,7 +77,7 @@ if st.button("Ask") and query:
         payload = {"query": query, "top_k": 5, "stream": False}
         try:
             response = requests.post(
-                f"{BACKEND_URL}/api/v1/ask", json=payload, timeout=120
+                f"{API_PREFIX}/api/v1/ask", json=payload, timeout=300
             )
             if response.status_code == 200:
                 data = response.json()

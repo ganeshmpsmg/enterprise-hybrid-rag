@@ -8,9 +8,7 @@ import requests
 st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
 
 BACKEND_URL = os.getenv("BACKEND_URL", "").rstrip("/")
-
-# If no backend URL is configured, use relative API paths.
-API_PREFIX = "" if BACKEND_URL == "" else BACKEND_URL
+API_PREFIX = BACKEND_URL or ""
 
 # Initialize Session State
 if "messages" not in st.session_state:
@@ -26,6 +24,12 @@ with st.sidebar:
     st.markdown("---")
 
     # System Status
+    if not BACKEND_URL:
+        st.warning(
+            "BACKEND_URL is not configured. Using relative API paths to /api/v1/* "
+            "from the Streamlit host. Set BACKEND_URL if the backend is deployed separately."
+        )
+
     try:
         health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=3)
         if health.status_code == 200:
@@ -69,7 +73,7 @@ if uploaded_file and st.button("Upload PDF"):
                 )
             }
             # Ensure your backend has a corresponding endpoint for this
-            response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files)
+            response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
 
             if response.status_code in [200, 201]:
                 st.success(f"Successfully uploaded {uploaded_file.name}")
@@ -89,7 +93,7 @@ if st.button("Ask") and query:
         payload = {"query": query, "top_k": 5, "stream": False}
         try:
             response = requests.post(
-                f"{API_PREFIX}/api/v1/ask", json=payload, timeout=120
+                f"{API_PREFIX}/api/v1/ask", json=payload, timeout=300
             )
             if response.status_code == 200:
                 data = response.json()
