@@ -7,13 +7,17 @@ import requests
 # =========================
 st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
 
-BACKEND_URL = os.getenv("BACKEND_URL", "").rstrip("/")
-if not BACKEND_URL:
-    BACKEND_URL = "http://localhost:8000"
-    BACKEND_WARNING = True
+BACKEND_URL = os.getenv("BACKEND_URL", "").strip().rstrip("/")
+BACKEND_LOCAL_FALLBACK = os.getenv("BACKEND_LOCAL_FALLBACK", "false").lower() in ("1", "true", "yes")
+if BACKEND_URL:
+    API_PREFIX = BACKEND_URL
+    backend_status = "configured"
+elif BACKEND_LOCAL_FALLBACK:
+    API_PREFIX = "http://localhost:8000"
+    backend_status = "local_fallback"
 else:
-    BACKEND_WARNING = False
-API_PREFIX = BACKEND_URL
+    API_PREFIX = None
+    backend_status = "unset"
 
 # Initialize Session State
 if "messages" not in st.session_state:
@@ -29,21 +33,27 @@ with st.sidebar:
     st.markdown("---")
 
     # System Status
-    if BACKEND_WARNING:
+    if backend_status == "unset":
+        st.error(
+            "BACKEND_URL is not configured. Set BACKEND_URL to the deployed backend host, "
+            "for example https://my-backend.example.com. The Streamlit app cannot connect until this is configured."
+        )
+    elif backend_status == "local_fallback":
         st.warning(
-            "BACKEND_URL is not configured. Using http://localhost:8000 as the default backend. "
+            "Using http://localhost:8000 as a local development fallback. "
             "Set BACKEND_URL if the backend is deployed separately."
         )
 
-    try:
-        health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
-        if health.status_code == 200:
-            st.success("Backend Online")
-        else:
-            st.error(f"Backend Error: {health.status_code}")
-            st.code(health.text)
-    except Exception as e:
-        st.error(f"Backend Offline: {e}")
+    if API_PREFIX is not None:
+        try:
+            health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
+            if health.status_code == 200:
+                st.success("Backend Online")
+            else:
+                st.error(f"Backend Error: {health.status_code}")
+                st.code(health.text)
+        except Exception as e:
+            st.error(f"Backend Offline: {e}")
 
     st.subheader("Uploaded Documents")
     if not st.session_state.uploaded_files:
@@ -69,25 +79,29 @@ uploaded_file = st.file_uploader("Upload PDF Document", type=["pdf"])
 
 if uploaded_file and st.button("Upload PDF"):
     with st.spinner("Uploading document..."):
-        try:
-            files = {
-                "file": (
-                    uploaded_file.name,
-                    uploaded_file.getvalue(),
-                    "application/pdf",
-                )
-            }
-            # Ensure your backend has a corresponding endpoint for this
-            response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
+        if API_PREFIX is None:
+            st.error(
+                "Backend is not configured. Set BACKEND_URL to the deployed backend host before uploading files."
+            )
+        else:
+            try:
+                files = {
+                    "file": (
+                        uploaded_file.name,
+                        uploaded_file.getvalue(),
+                        "application/pdf",
+                    )
+                }
+                response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
 
-            if response.status_code in [200, 201]:
-                st.success(f"Successfully uploaded {uploaded_file.name}")
-                if uploaded_file.name not in st.session_state.uploaded_files:
-                    st.session_state.uploaded_files.append(uploaded_file.name)
-            else:
-                st.error(f"Upload Failed: {response.text}")
-        except Exception as e:
-            st.exception(e)
+                if response.status_code in [200, 201]:
+                    st.success(f"Successfully uploaded {uploaded_file.name}")
+                    if uploaded_file.name not in st.session_state.uploaded_files:
+                        st.session_state.uploaded_files.append(uploaded_file.name)
+                else:
+                    st.error(f"Upload Failed: {response.text}")
+            except Exception as e:
+                st.error(f"Connection Error: {e}")
 
 # 2. Query Section
 st.subheader("💬 Ask Questions")
@@ -95,18 +109,23 @@ query = st.text_input("Enter your question")
 
 if st.button("Ask") and query:
     with st.spinner("Retrieving answer..."):
-        payload = {"query": query, "top_k": 5, "stream": False}
-        try:
-            response = requests.post(
-                f"{API_PREFIX}/api/v1/ask", json=payload, timeout=300
+        if API_PREFIX is None:
+            st.error(
+                "Backend is not configured. Set BACKEND_URL to the deployed backend host before asking questions."
             )
-            if response.status_code == 200:
-                data = response.json()
-                st.session_state.messages.append({"question": query, "response": data})
-            else:
-                st.error(f"Error: {response.status_code} - {response.text}")
-        except Exception as e:
-            st.error(f"Connection Error: {e}")
+        else:
+            payload = {"query": query, "top_k": 5, "stream": False}
+            try:
+                response = requests.post(
+                    f"{API_PREFIX}/api/v1/ask", json=payload, timeout=300
+                )
+                if response.status_code == 200:
+                    data = response.json()
+                    st.session_state.messages.append({"question": query, "response": data})
+                else:
+                    st.error(f"Error: {response.status_code} - {response.text}")
+            except Exception as e:
+                st.error(f"Connection Error: {e}")
 
 # 3. Chat History
 for item in reversed(st.session_state.messages):
