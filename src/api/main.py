@@ -69,6 +69,13 @@ def create_app() -> FastAPI:
     # ── Routes ──────────────────────────────────────
     app.include_router(router, prefix="/api/v1")
 
+    @app.get("/", include_in_schema=False)
+    async def root():
+        return {
+            "status": "ok",
+            "message": "Enterprise Hybrid RAG backend is running. Use /api/v1/health or /docs.",
+        }
+
     # ── Global Exception Handler ────────────────────────
     @app.exception_handler(Exception)
     async def global_exception_handler(request: Request, exc: Exception):
