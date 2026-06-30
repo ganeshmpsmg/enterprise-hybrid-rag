@@ -1,5 +1,6 @@
 import logging
 import os
+import asyncio
 from fastapi import APIRouter, HTTPException, UploadFile, File
 from starlette.concurrency import run_in_threadpool
 from pydantic import BaseModel
@@ -16,6 +17,7 @@ class QueryRequest(BaseModel):
     query: str
 
 router = APIRouter()
+ASK_TIMEOUT = int(os.getenv("ASK_TIMEOUT", "60"))
 
 @router.post("/upload")
 async def upload_document(
@@ -61,10 +63,13 @@ async def ask_question(request: QueryRequest):
         )
 
     try:
-        response = await run_in_threadpool(_pipeline.run, query=request.query)
+        fut = run_in_threadpool(_pipeline.run, query=request.query)
+        response = await asyncio.wait_for(fut, timeout=ASK_TIMEOUT)
         return response.to_dict() if hasattr(response, "to_dict") else response
     except Exception as e:
         logger.exception("Error processing /ask request")
+        if isinstance(e, asyncio.TimeoutError):
+            raise HTTPException(status_code=504, detail=f"RAG pipeline timed out after {ASK_TIMEOUT}s")
         raise HTTPException(status_code=500, detail=str(e))
 
 @router.get("/health", response_model=HealthResponse)
