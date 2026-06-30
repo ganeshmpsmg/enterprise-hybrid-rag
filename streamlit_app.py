@@ -1,30 +1,31 @@
+# =========================
+# CONFIGURATION
+# =========================
 import os
 import streamlit as st
 import requests
 
-# =========================
-# CONFIGURATION
-# =========================
-st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout="wide")
+st.set_page_config(
+    page_title="Enterprise Hybrid RAG",
+    page_icon="📚",
+    layout="wide"
+)
 
-BACKEND_URL = os.getenv("BACKEND_URL", "").strip().rstrip("/")
-BACKEND_LOCAL_FALLBACK = os.getenv("BACKEND_LOCAL_FALLBACK", "false").lower() in ("1", "true", "yes")
-if BACKEND_URL:
-    API_PREFIX = BACKEND_URL
-    backend_status = "configured"
-elif BACKEND_LOCAL_FALLBACK:
-    API_PREFIX = "http://localhost:8000"
-    backend_status = "https://enterprise-hybrid-rag.onrender.com"
-else:
-    API_PREFIX = None
-    backend_status = "unset"
+# Backend URL
+BACKEND_URL = os.getenv(
+    "BACKEND_URL",
+    "https://enterprise-hybrid-rag.onrender.com"
+).rstrip("/")
+
+API_PREFIX = BACKEND_URL
+backend_status = "configured"
 
 # Initialize Session State
 if "messages" not in st.session_state:
     st.session_state.messages = []
+
 if "uploaded_files" not in st.session_state:
     st.session_state.uploaded_files = []
-
 # =========================
 # SIDEBAR
 # =========================
@@ -32,30 +33,23 @@ with st.sidebar:
     st.title("📚 Enterprise Hybrid RAG")
     st.markdown("---")
 
-    # System Status
-    if backend_status == "unset":
-        st.error(
-            "BACKEND_URL is not configured. Set BACKEND_URL to the deployed backend host, "
-            "for example https://my-backend.example.com. The Streamlit app cannot connect until this is configured."
-        )
-    elif backend_status == "local_fallback":
-        st.warning(
-            "Using http://localhost:8000 as a local development fallback. "
-            "Set BACKEND_URL if the backend is deployed separately."
+    try:
+        health = requests.get(
+            f"{API_PREFIX}/api/v1/health",
+            timeout=10
         )
 
-    if API_PREFIX is not None:
-        try:
-            health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
-            if health.status_code == 200:
-                st.success("Backend Online")
-            else:
-                st.error(f"Backend Error: {health.status_code}")
-                st.code(health.text)
-        except Exception as e:
-            st.error(f"Backend Offline: {e}")
+        if health.status_code == 200:
+            st.success("✅ Backend Online")
+        else:
+            st.error(f"Backend Error ({health.status_code})")
+            st.code(health.text)
+
+    except Exception as e:
+        st.error(f"Backend Offline:\n{e}")
 
     st.subheader("Uploaded Documents")
+
     if not st.session_state.uploaded_files:
         st.info("No documents uploaded")
     else:

@@ -35,12 +35,18 @@ def create_app() -> FastAPI:
         logger.info("Starting Enterprise Hybrid RAG System...")
         t0 = time.time()
 
-        # FIX: Removed the try/except. Let the app crash on startup if 
-        # configuration is bad. This prevents the 502 "ghost" errors.
-        await _initialize_pipeline()
-        
+        route_module._pipeline = None
+        route_module._ingestion_service = None
+        route_module._initialization_error = None
+
+        try:
+            await _initialize_pipeline()
+        except Exception as exc:
+            route_module._initialization_error = str(exc)
+            logger.exception("Pipeline initialization failed; starting in degraded mode")
+
         elapsed = time.time() - t0
-        logger.info(f"Pipeline initialized in {elapsed:.2f}s")
+        logger.info(f"Pipeline initialization completed in {elapsed:.2f}s")
         yield  # Application runs here
         logger.info("Shutting down RAG system...")
 

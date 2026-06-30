@@ -9,6 +9,7 @@ from src.api.schemas import HealthResponse
 # Global placeholders injected at runtime by main.py
 _pipeline = None
 _ingestion_service = None
+_initialization_error = None
 logger = logging.getLogger(__name__)
 
 class QueryRequest(BaseModel):
@@ -27,7 +28,10 @@ async def upload_document(
     global _ingestion_service
     
     if _ingestion_service is None:
-        raise HTTPException(status_code=500, detail="Ingestion service not initialized.")
+        raise HTTPException(
+            status_code=503,
+            detail=_initialization_error or "Ingestion service not initialized.",
+        )
 
     try:
         content = await file.read()
@@ -51,7 +55,10 @@ async def ask_question(request: QueryRequest):
     global _pipeline
     
     if _pipeline is None:
-        raise HTTPException(status_code=500, detail="RAG pipeline is not initialized.")
+        raise HTTPException(
+            status_code=503,
+            detail=_initialization_error or "RAG pipeline is not initialized.",
+        )
 
     try:
         response = await run_in_threadpool(_pipeline.run, query=request.query)
@@ -63,10 +70,12 @@ async def ask_question(request: QueryRequest):
 @router.get("/health", response_model=HealthResponse)
 async def health():
     global _pipeline, _ingestion_service
+    status = "ok" if _pipeline is not None else "degraded"
+    vector_store_status = "initialized" if _pipeline is not None else "uninitialized"
     return {
-        "status": "ok",
+        "status": status,
         "version": os.getenv("APP_VERSION", "1.0.0"),
-        "vector_store_status": "initialized" if _pipeline is not None else "uninitialized",
+        "vector_store_status": vector_store_status,
         "total_documents": 0,
         "total_chunks": 0,
         "uptime_seconds": 0.0,
@@ -82,4 +91,5 @@ async def debug():
     return {
         "pipeline_initialized": _pipeline is not None,
         "ingestion_initialized": _ingestion_service is not None,
+        "initialization_error": _initialization_error,
     }
