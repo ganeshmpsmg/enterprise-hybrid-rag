@@ -5,7 +5,8 @@ from src.chunking.chunker import Chunk
 from src.chunking.recursive_chunker import RecursiveChunker
 from src.chunking.metadata_chunker import MetadataChunker
 
-ML_TEXT = """
+ML_TEXT = (
+    """
 Transformer architecture has revolutionized natural language processing.
 The key innovation is the attention mechanism which allows the model to focus on relevant parts.
 
@@ -17,7 +18,9 @@ Layer normalization is applied before each sub-layer.
 
 BERT uses bidirectional training to understand context from both directions.
 GPT uses autoregressive training to predict the next token.
-""" * 5  # Make it longer to test chunking
+"""
+    * 5
+)  # Make it longer to test chunking
 
 
 @pytest.fixture

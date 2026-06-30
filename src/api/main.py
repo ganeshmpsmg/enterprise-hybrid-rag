@@ -10,8 +10,10 @@ from contextlib import asynccontextmanager
 try:
     from dotenv import load_dotenv
 except ModuleNotFoundError:
+
     def load_dotenv(*args, **kwargs):
         return False
+
 
 from fastapi import FastAPI, Request, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
@@ -24,6 +26,7 @@ import src.api.routes as route_module
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
+
 
 # ── Application factory ──────────────────────────────────────
 def create_app() -> FastAPI:
@@ -43,7 +46,9 @@ def create_app() -> FastAPI:
             await _initialize_pipeline()
         except Exception as exc:
             route_module._initialization_error = str(exc)
-            logger.exception("Pipeline initialization failed; starting in degraded mode")
+            logger.exception(
+                "Pipeline initialization failed; starting in degraded mode"
+            )
 
         elapsed = time.time() - t0
         logger.info(f"Pipeline initialization completed in {elapsed:.2f}s")
@@ -113,7 +118,11 @@ async def _initialize_pipeline():
     from src.utils.ingestion_service import IngestionService
 
     # 1. Initialize Core Models
-    embed_model = EmbeddingModel(model_name=os.getenv("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"))
+    embed_model = EmbeddingModel(
+        model_name=os.getenv(
+            "EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2"
+        )
+    )
     embed_pipeline = EmbeddingPipeline(model=embed_model)
 
     # 2. Initialize Vector Store
@@ -125,11 +134,13 @@ async def _initialize_pipeline():
             persist_dir=os.getenv("CHROMA_PERSIST_DIR", "data/embeddings/chroma_db"),
             collection_name=os.getenv("CHROMA_COLLECTION", "ml_documents"),
         )
-    
+
     # 3. Initialize Retrievers
     sparse_retriever = BM25Retriever()
     hybrid_retriever = HybridRetriever(
-        dense_retriever=DenseRetriever(vector_store=vector_store, embedding_pipeline=embed_pipeline),
+        dense_retriever=DenseRetriever(
+            vector_store=vector_store, embedding_pipeline=embed_pipeline
+        ),
         sparse_retriever=sparse_retriever,
         dense_top_k=int(os.getenv("DENSE_TOP_K", "20")),
         sparse_top_k=int(os.getenv("SPARSE_TOP_K", "20")),
@@ -141,21 +152,35 @@ async def _initialize_pipeline():
         hybrid_retriever=hybrid_retriever,
         ranking_pipeline=RankingPipeline(
             hybrid_retriever=hybrid_retriever,
-            reranker=Reranker(model_name=os.getenv("RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"), top_k=5)
+            reranker=Reranker(
+                model_name=os.getenv(
+                    "RERANKER_MODEL", "cross-encoder/ms-marco-MiniLM-L-6-v2"
+                ),
+                top_k=5,
+            ),
         ),
-        answer_generator=AnswerGenerator(llm_service=LLMService(provider=os.getenv("LLM_PROVIDER", "openai"))),
+        answer_generator=AnswerGenerator(
+            llm_service=LLMService(provider=os.getenv("LLM_PROVIDER", "openai"))
+        ),
         query_expander=QueryExpander(),
     )
 
     # 5. Inject dependencies into route module
     route_module._vector_store = vector_store
     route_module._pipeline = rag_pipeline
-    route_module._ingestion_service = IngestionService(index_builder=IndexBuilder(vector_store=vector_store, embedding_pipeline=embed_pipeline), sparse_retriever=sparse_retriever)
-    
+    route_module._ingestion_service = IngestionService(
+        index_builder=IndexBuilder(
+            vector_store=vector_store, embedding_pipeline=embed_pipeline
+        ),
+        sparse_retriever=sparse_retriever,
+    )
+
     logger.info("All pipeline components initialized successfully")
+
 
 app = create_app()
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run("src.api.main:app", host="0.0.0.0", port=8000, reload=False)

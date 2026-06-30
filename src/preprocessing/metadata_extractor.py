@@ -9,9 +9,11 @@ from typing import Optional
 # Setup logger
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class DocumentMetadata:
     """Rich metadata extracted from a document."""
+
     file_name: str
     file_type: str
     file_size_bytes: int
@@ -37,6 +39,7 @@ class DocumentMetadata:
             "extraction_timestamp": self.extraction_timestamp,
         }
 
+
 class MetadataExtractor:
     """Extracts structured metadata from document text."""
 
@@ -60,11 +63,11 @@ class MetadataExtractor:
             file_size_bytes=file_size_bytes,
             doc_id=doc_id,
         )
-        
+
         # Explicitly calling the method defined in this class
         meta.abstract = self._extract_abstract(text)
         meta.has_abstract = meta.abstract is not None
-        
+
         return meta
 
     def _extract_abstract(self, text: str) -> Optional[str]:

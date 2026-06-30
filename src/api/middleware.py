@@ -9,19 +9,22 @@ from starlette.middleware.base import BaseHTTPMiddleware
 
 logger = logging.getLogger(__name__)
 
+
 class RequestLoggingMiddleware(BaseHTTPMiddleware):
     """Log all incoming requests with timing and request ID."""
+
     async def dispatch(self, request: Request, call_next: Callable) -> Response:
         request_id = str(uuid.uuid4())[:8]
         start = time.perf_counter()
-        
+
         response = await call_next(request)
-        
+
         elapsed_ms = (time.perf_counter() - start) * 1000
         response.headers["X-Request-ID"] = request_id
         response.headers["X-Process-Time-Ms"] = str(round(elapsed_ms, 2))
-        
+
         return response
+
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
     """Simple in-memory rate limiting (per IP) with upload exemption."""
@@ -42,7 +45,8 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
 
         # Update and clean old requests
         self._requests[client_ip] = [
-            t for t in self._requests.get(client_ip, []) 
+            t
+            for t in self._requests.get(client_ip, [])
             if now - t < self.window_seconds
         ]
 

@@ -28,24 +28,41 @@ ML_SYNONYMS = {
     "feature": ["attribute", "input"],
 }
 
+
 class QueryExpander:
     """Expands queries using domain-specific ML synonyms, acronyms, and decomposition."""
-    
+
     ML_ACRONYMS = {
-        "NLP": "natural language processing", "CV": "computer vision",
-        "RL": "reinforcement learning", "ML": "machine learning",
-        "DL": "deep learning", "LLM": "large language model",
-        "RAG": "retrieval augmented generation", "BERT": "bidirectional encoder representations transformers",
-        "GPT": "generative pre-trained transformer", "CNN": "convolutional neural network",
-        "RNN": "recurrent neural network", "LSTM": "long short-term memory",
-        "GAN": "generative adversarial network", "VAE": "variational autoencoder",
-        "SVM": "support vector machine", "KNN": "k nearest neighbors",
-        "PCA": "principal component analysis", "FAISS": "facebook AI similarity search",
-        "BM25": "best match 25", "MRR": "mean reciprocal rank",
+        "NLP": "natural language processing",
+        "CV": "computer vision",
+        "RL": "reinforcement learning",
+        "ML": "machine learning",
+        "DL": "deep learning",
+        "LLM": "large language model",
+        "RAG": "retrieval augmented generation",
+        "BERT": "bidirectional encoder representations transformers",
+        "GPT": "generative pre-trained transformer",
+        "CNN": "convolutional neural network",
+        "RNN": "recurrent neural network",
+        "LSTM": "long short-term memory",
+        "GAN": "generative adversarial network",
+        "VAE": "variational autoencoder",
+        "SVM": "support vector machine",
+        "KNN": "k nearest neighbors",
+        "PCA": "principal component analysis",
+        "FAISS": "facebook AI similarity search",
+        "BM25": "best match 25",
+        "MRR": "mean reciprocal rank",
         "NDCG": "normalized discounted cumulative gain",
     }
 
-    def __init__(self, use_synonyms=True, use_acronym_expansion=True, use_decomposition=False, max_expansions=3):
+    def __init__(
+        self,
+        use_synonyms=True,
+        use_acronym_expansion=True,
+        use_decomposition=False,
+        max_expansions=3,
+    ):
         self.use_synonyms = use_synonyms
         self.use_acronym_expansion = use_acronym_expansion
         self.use_decomposition = use_decomposition
@@ -90,7 +107,9 @@ class QueryExpander:
         for term, synonyms in ML_SYNONYMS.items():
             if term in query_lower:
                 for syn in synonyms[:2]:
-                    expanded = re.sub(re.escape(term), syn, query_lower, flags=re.IGNORECASE)
+                    expanded = re.sub(
+                        re.escape(term), syn, query_lower, flags=re.IGNORECASE
+                    )
                     if expanded != query_lower:
                         expansions.append(expanded)
         return expansions
@@ -104,6 +123,7 @@ class QueryExpander:
                 if len(part.split()) >= 3:
                     sub_queries.append(part)
         return sub_queries
+
 
 # --- Pipeline Execution ---
 class RAGPipeline:
@@ -119,22 +139,22 @@ class RAGPipeline:
         # 1. Expand query using positional argument 'query'
         expanded_queries = self.query_expander.expand(query)
         primary_query = expanded_queries[0] if expanded_queries else query
-        
+
         # 2. Retrieve and rerank
         ranked_results = self.ranking_pipeline.retrieve_and_rerank(
             query=primary_query,
             top_k=5,
         )
-        
+
         # 3. Convert objects to dicts as expected by the generator
         ranked_results_dicts = [r.to_dict() for r in ranked_results]
-        
+
         # 4. Generate answer
         rag_answer = self.answer_generator.generate(
             query=primary_query,
             ranked_results=ranked_results_dicts,
         )
-        
+
         return RAGResponse(
             answer=rag_answer.answer,
             citations=rag_answer.citations,

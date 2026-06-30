@@ -14,6 +14,7 @@ from src.reranker.ranking_pipeline import RankingPipeline
 
 logger = logging.getLogger(__name__)
 
+
 @dataclass
 class RAGResponse:
     answer: str
@@ -25,13 +26,14 @@ class RAGResponse:
             "citations": self.citations,
         }
 
+
 class RAGPipeline:
     def __init__(
-        self, 
-        hybrid_retriever: HybridRetriever, 
-        ranking_pipeline: RankingPipeline, 
-        answer_generator: AnswerGenerator, 
-        query_expander: QueryExpander
+        self,
+        hybrid_retriever: HybridRetriever,
+        ranking_pipeline: RankingPipeline,
+        answer_generator: AnswerGenerator,
+        query_expander: QueryExpander,
     ):
         self.hybrid_retriever = hybrid_retriever
         self.ranking_pipeline = ranking_pipeline
@@ -48,7 +50,7 @@ class RAGPipeline:
         primary_query = expanded_queries[0] if expanded_queries else query
 
         # 2. Retrieve and rerank
-        
+
         ranked_results = self.ranking_pipeline.retrieve_and_rerank(
             query=primary_query,
             top_k=5,
@@ -62,9 +64,6 @@ class RAGPipeline:
             query=primary_query,
             ranked_results=ranked_results,
         )
-        
+
         # 4. Return as RAGResponse
-        return RAGResponse(
-            answer=rag_answer.answer,
-            citations=rag_answer.citations
-        )
+        return RAGResponse(answer=rag_answer.answer, citations=rag_answer.citations)

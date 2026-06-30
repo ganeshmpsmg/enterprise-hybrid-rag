@@ -13,22 +13,23 @@ _ingestion_service = None
 _initialization_error = None
 logger = logging.getLogger(__name__)
 
+
 class QueryRequest(BaseModel):
     query: str
+
 
 router = APIRouter()
 ASK_TIMEOUT = int(os.getenv("ASK_TIMEOUT", "60"))
 
+
 @router.post("/upload")
-async def upload_document(
-    file: UploadFile = File(...)
-):
+async def upload_document(file: UploadFile = File(...)):
     """
     Receives file, reads bytes, and triggers the ingestion service.
     Removed doc_id as it is not supported by the current service signature.
     """
     global _ingestion_service
-    
+
     if _ingestion_service is None:
         raise HTTPException(
             status_code=503,
@@ -37,25 +38,26 @@ async def upload_document(
 
     try:
         content = await file.read()
-        
+
         # Offload synchronous ingestion to threadpool
         # Note: doc_id argument removed to match ingest_bytes signature
         result = await run_in_threadpool(
             _ingestion_service.ingest_bytes,
             content=content,
             filename=file.filename,
-            content_type=file.content_type
+            content_type=file.content_type,
         )
         return {"status": "success", "detail": result}
     except Exception as e:
         logger.exception("Error processing file upload")
         raise HTTPException(status_code=500, detail=str(e))
 
+
 @router.post("/ask")
 async def ask_question(request: QueryRequest):
     """Processes a RAG query using the synchronous pipeline in a threadpool."""
     global _pipeline
-    
+
     if _pipeline is None:
         raise HTTPException(
             status_code=503,
@@ -69,8 +71,11 @@ async def ask_question(request: QueryRequest):
     except Exception as e:
         logger.exception("Error processing /ask request")
         if isinstance(e, asyncio.TimeoutError):
-            raise HTTPException(status_code=504, detail=f"RAG pipeline timed out after {ASK_TIMEOUT}s")
+            raise HTTPException(
+                status_code=504, detail=f"RAG pipeline timed out after {ASK_TIMEOUT}s"
+            )
         raise HTTPException(status_code=500, detail=str(e))
+
 
 @router.get("/health", response_model=HealthResponse)
 async def health():
@@ -86,9 +91,11 @@ async def health():
         "uptime_seconds": 0.0,
     }
 
+
 @router.get("/ping")
 async def ping():
     return {"status": "ok"}
+
 
 @router.get("/debug")
 async def debug():
