@@ -34,13 +34,13 @@ def http_get_with_retry(url: str, retries: int = 3, delay: float = 1.0, timeout:
             raise
 
 
-def http_get_with_retry(url: str, retries: int = 3, delay: float = 1.0, timeout: int = 5):
-    """Simple GET with retries for transient 5xx/connection errors."""
+def http_post_with_retry(url: str, json=None, files=None, retries: int = 3, delay: float = 2.0, timeout: int = 60):
+    """POST with retries on exceptions or 5xx responses."""
     import time
     last_exc = None
     for attempt in range(1, retries + 1):
         try:
-            resp = requests.get(url, timeout=timeout)
+            resp = requests.post(url, json=json, files=files, timeout=timeout)
             if 500 <= resp.status_code < 600 and attempt < retries:
                 time.sleep(delay * attempt)
                 continue
@@ -66,7 +66,7 @@ with st.sidebar:
     st.markdown("---")
 
     try:
-        health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
+        health = http_get_with_retry(f"{API_PREFIX}/api/v1/health", retries=2, timeout=5)
         if health.status_code == 200:
             st.success("Backend Online")
         else:
@@ -77,7 +77,7 @@ with st.sidebar:
 
     if API_PREFIX is not None:
         try:
-            health = requests.get(f"{API_PREFIX}/api/v1/health", timeout=5)
+            health = http_get_with_retry(f"{API_PREFIX}/api/v1/health", retries=2, timeout=5)
             if health.status_code == 200:
                 st.success("Backend Online")
             else:
@@ -103,7 +103,7 @@ if uploaded_file and st.button("Upload PDF"):
     with st.spinner("Uploading and processing document..."):
         try:
             files = {"file": (uploaded_file.name, uploaded_file.getvalue(), "application/pdf")}
-            response = requests.post(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
+            response = http_post_with_retry(f"{API_PREFIX}/api/v1/upload", files=files, timeout=600)
 
             if response.status_code in [200, 201]:
                 st.success(f"Successfully uploaded {uploaded_file.name}")
@@ -123,9 +123,7 @@ if st.button("Ask") and query:
     with st.spinner("Retrieving answer..."):
         payload = {"query": query, "top_k": 5, "stream": False}
         try:
-            response = requests.post(
-                f"{API_PREFIX}/api/v1/ask", json=payload, timeout=300
-            )
+            response = http_post_with_retry(f"{API_PREFIX}/api/v1/ask", json=payload, retries=3, timeout=300)
             if response.status_code == 200:
                 data = response.json()
                 st.session_state.messages.append({"question": query, "response": data})
