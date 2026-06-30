@@ -1,4 +1,6 @@
 import os
+import re
+import json
 import streamlit as st
 import requests
 
@@ -52,6 +54,32 @@ def http_post_with_retry(url: str, json=None, files=None, retries: int = 3, dela
                 continue
             raise
 
+
+def extract_backend_error_text(text: str) -> str:
+    """Try to extract a clean error message from HTML or JSON backend responses."""
+    text = text.strip()
+    if not text:
+        return "No response body returned from the backend."
+
+    # Attempt JSON first
+    try:
+        parsed = json.loads(text)
+        if isinstance(parsed, dict):
+            return json.dumps(parsed, indent=2)
+        return str(parsed)
+    except json.JSONDecodeError:
+        pass
+
+    # Strip HTML tags if present
+    if text.startswith("<!DOCTYPE html>") or text.startswith("<html"):
+        clean = re.sub(r"<script[^>]*>.*?</script>", "", text, flags=re.S)
+        clean = re.sub(r"<style[^>]*>.*?</style>", "", clean, flags=re.S)
+        clean = re.sub(r"<[^>]+>", "", clean)
+        clean = re.sub(r"\s+", " ", clean).strip()
+        return clean[:4000] or "Backend returned an HTML error page."
+
+    return text[:4000]
+
 # Initialize Session State
 if "messages" not in st.session_state:
     st.session_state.messages = []
@@ -71,20 +99,9 @@ with st.sidebar:
             st.success("Backend Online")
         else:
             st.error(f"Backend Error: {health.status_code}")
-            st.code(health.text)
+            st.code(extract_backend_error_text(health.text))
     except Exception as e:
         st.error(f"Backend Offline: {e}")
-
-    if API_PREFIX is not None:
-        try:
-            health = http_get_with_retry(f"{API_PREFIX}/api/v1/health", retries=2, timeout=5)
-            if health.status_code == 200:
-                st.success("Backend Online")
-            else:
-                st.error(f"Backend Error: {health.status_code}")
-                st.code(health.text)
-        except Exception as e:
-            st.error(f"Backend Offline: {e}")
 
     if st.button("🗑️ Clear Chat"):
         st.session_state.messages = []
@@ -111,7 +128,7 @@ if uploaded_file and st.button("Upload PDF"):
                     st.session_state.uploaded_files.append(uploaded_file.name)
             else:
                 st.error(f"Upload Failed (Status {response.status_code})")
-                st.code(response.text) # Displaying the specific server error
+                st.code(extract_backend_error_text(response.text))
         except Exception as e:
             st.error(f"Connection Error: {e}")
 
@@ -129,7 +146,7 @@ if st.button("Ask") and query:
                 st.session_state.messages.append({"question": query, "response": data})
             else:
                 st.error(f"Server Error ({response.status_code})")
-                st.code(response.text) # Displaying the specific backend error
+                st.code(extract_backend_error_text(response.text))
         except Exception as e:
             st.error(f"Connection Error: {e}")
 

@@ -27,13 +27,14 @@ llama-index-vector-stores-faiss==0.3.0
 # ── Embeddings & Transformers ────────────────────────────────
 sentence-transformers==3.3.1
 transformers==4.45.2
-torch==2.5.1
+torch==2.12.1
 tokenizers==0.20.3
 accelerate==1.2.1
 
 # ── Vector Databases ─────────────────────────────────────────
 faiss-cpu==1.9.0
 chromadb==0.5.23
+chroma-hnswlib==0.7.5
 qdrant-client==1.12.1
 
 # ── Sparse Retrieval ─────────────────────────────────────────
