@@ -37,6 +37,11 @@ class ChromaManager(VectorStore):
         port: int = 8001,
         distance_function: str = "cosine",
     ):
+        try:
+            import chromadb  # noqa: F401
+        except ImportError as exc:
+            raise ImportError("chromadb not installed. Run: pip install chromadb") from exc
+
         self.collection_name = collection_name
         self.persist_dir = persist_dir
         self.host = host

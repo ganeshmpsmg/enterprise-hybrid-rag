@@ -33,8 +33,7 @@ logger = logging.getLogger(__name__)
 def create_app() -> FastAPI:
     """Create and configure the FastAPI application."""
 
-    @asynccontextmanager
-    async def lifespan(app: FastAPI):
+    async def startup_event() -> None:
         """Initialize all pipeline components on startup."""
         logger.info("Starting Enterprise Hybrid RAG System...")
         t0 = time.time()
@@ -43,28 +42,22 @@ def create_app() -> FastAPI:
         route_module._ingestion_service = None
         route_module._initialization_error = None
 
-        async def init_pipeline():
-            try:
-                await _initialize_pipeline()
-            except Exception as exc:
-                route_module._initialization_error = str(exc)
-                logger.exception(
-                    "Pipeline initialization failed; starting in degraded mode"
-                )
-
-        app.add_event_handler("startup", lambda: asyncio.create_task(init_pipeline()))
+        try:
+            await _initialize_pipeline()
+        except Exception as exc:
+            route_module._initialization_error = str(exc)
+            logger.exception("Pipeline initialization failed; starting in degraded mode")
 
         elapsed = time.time() - t0
-        logger.info(f"Startup handler registered in {elapsed:.2f}s")
-        yield  # Application runs here
-        logger.info("Shutting down RAG system...")
+        logger.info(f"Startup completed in {elapsed:.2f}s")
 
     app = FastAPI(
         title="Enterprise Hybrid RAG API",
         version="1.0.0",
-        lifespan=lifespan,
         docs_url="/docs",
     )
+
+    app.add_event_handler("startup", startup_event)
 
     # ── Middleware ──
     app.add_middleware(
@@ -134,10 +127,17 @@ async def _initialize_pipeline():
     if v_type == "faiss":
         vector_store = FAISSManager(dimension=384)
     else:
-        vector_store = ChromaManager(
-            persist_dir=os.getenv("CHROMA_PERSIST_DIR", "data/embeddings/chroma_db"),
-            collection_name=os.getenv("CHROMA_COLLECTION", "ml_documents"),
-        )
+        try:
+            vector_store = ChromaManager(
+                persist_dir=os.getenv("CHROMA_PERSIST_DIR", "data/embeddings/chroma_db"),
+                collection_name=os.getenv("CHROMA_COLLECTION", "ml_documents"),
+            )
+        except ImportError as exc:
+            logger.warning(
+                "ChromaDB unavailable (%s); falling back to FAISS vector store.",
+                exc,
+            )
+            vector_store = FAISSManager(dimension=384)
 
     # 3. Initialize Retrievers
     sparse_retriever = BM25Retriever()
