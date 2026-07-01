@@ -94,7 +94,7 @@ class RecursiveChunker(BaseChunker):
         if not separators:
             # Base case: character-level split
             return [
-                text[i:i + self.chunk_size]
+                text[i : i + self.chunk_size]
                 for i in range(0, len(text), self.chunk_size)
             ]
 

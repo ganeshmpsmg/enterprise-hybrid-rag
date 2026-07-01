@@ -131,7 +131,7 @@ class CrossEncoderReranker:
         """Run cross-encoder inference in batches."""
         all_scores = []
         for i in range(0, len(pairs), self.batch_size):
-            batch = pairs[i:i + self.batch_size]
+            batch = pairs[i : i + self.batch_size]
             try:
                 scores = self.model.predict(
                     batch,
