@@ -2,6 +2,7 @@
 FastAPI Application Entry Point - Enterprise Hybrid RAG System.
 """
 
+import asyncio
 import logging
 import os
 import time
@@ -42,16 +43,19 @@ def create_app() -> FastAPI:
         route_module._ingestion_service = None
         route_module._initialization_error = None
 
-        try:
-            await _initialize_pipeline()
-        except Exception as exc:
-            route_module._initialization_error = str(exc)
-            logger.exception(
-                "Pipeline initialization failed; starting in degraded mode"
-            )
+        async def init_pipeline():
+            try:
+                await _initialize_pipeline()
+            except Exception as exc:
+                route_module._initialization_error = str(exc)
+                logger.exception(
+                    "Pipeline initialization failed; starting in degraded mode"
+                )
+
+        app.add_event_handler("startup", lambda: asyncio.create_task(init_pipeline()))
 
         elapsed = time.time() - t0
-        logger.info(f"Pipeline initialization completed in {elapsed:.2f}s")
+        logger.info(f"Startup handler registered in {elapsed:.2f}s")
         yield  # Application runs here
         logger.info("Shutting down RAG system...")
 
