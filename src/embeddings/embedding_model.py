@@ -170,7 +170,7 @@ class EmbeddingModel:
         """Run model inference in batches."""
         all_embeddings = []
         for i in range(0, len(texts), self.batch_size):
-            batch = texts[i : i + self.batch_size]
+            batch = texts[i:i + self.batch_size]
             embeddings = self.model.encode(
                 batch,
                 batch_size=len(batch),

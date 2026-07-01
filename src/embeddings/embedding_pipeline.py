@@ -114,7 +114,7 @@ class EmbeddingPipeline:
 
         # Process in batches
         for i in range(0, len(chunks), self.batch_size):
-            batch = chunks[i : i + self.batch_size]
+            batch = chunks[i:i + self.batch_size]
             try:
                 texts = [self._prepare_text(c.content, mode="passage") for c in batch]
                 t_batch = time.perf_counter()
