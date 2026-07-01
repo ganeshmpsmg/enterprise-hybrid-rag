@@ -1,6 +1,5 @@
 import logging
 import re
-from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -123,39 +122,3 @@ class QueryExpander:
                 if len(part.split()) >= 3:
                     sub_queries.append(part)
         return sub_queries
-
-
-# --- Pipeline Execution ---
-class RAGPipeline:
-    def __init__(self, query_expander, ranking_pipeline, answer_generator):
-        self.query_expander = query_expander
-        self.ranking_pipeline = ranking_pipeline
-        self.answer_generator = answer_generator
-
-    def run(self, query: str):
-        """
-        Executes the RAG pipeline with correct type handling.
-        """
-        # 1. Expand query using positional argument 'query'
-        expanded_queries = self.query_expander.expand(query)
-        primary_query = expanded_queries[0] if expanded_queries else query
-
-        # 2. Retrieve and rerank
-        ranked_results = self.ranking_pipeline.retrieve_and_rerank(
-            query=primary_query,
-            top_k=5,
-        )
-
-        # 3. Convert objects to dicts as expected by the generator
-        ranked_results_dicts = [r.to_dict() for r in ranked_results]
-
-        # 4. Generate answer
-        rag_answer = self.answer_generator.generate(
-            query=primary_query,
-            ranked_results=ranked_results_dicts,
-        )
-
-        return RAGResponse(
-            answer=rag_answer.answer,
-            citations=rag_answer.citations,
-        )

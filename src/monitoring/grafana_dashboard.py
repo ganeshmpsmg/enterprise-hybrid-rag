@@ -34,7 +34,10 @@ def generate_dashboard() -> dict:
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0},
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.95, rate(enterprise_rag_request_duration_seconds_bucket[5m])) * 1000",
+                        "expr": (
+                            "histogram_quantile(0.95, "
+                            "rate(enterprise_rag_request_duration_seconds_bucket[5m])) * 1000"
+                        ),
                         "legendFormat": "P95 {{endpoint}}",
                     }
                 ],
@@ -60,7 +63,10 @@ def generate_dashboard() -> dict:
                 "gridPos": {"h": 8, "w": 12, "x": 12, "y": 8},
                 "targets": [
                     {
-                        "expr": "histogram_quantile(0.95, rate(enterprise_rag_query_stage_duration_seconds_bucket[5m])) * 1000",
+                        "expr": (
+                            "histogram_quantile(0.95, "
+                            "rate(enterprise_rag_query_stage_duration_seconds_bucket[5m])) * 1000"
+                        ),
                         "legendFormat": "{{stage}} P95",
                     }
                 ],

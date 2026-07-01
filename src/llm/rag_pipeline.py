@@ -4,7 +4,6 @@ RAG Pipeline - Complete end-to-end Retrieval-Augmented Generation pipeline.
 
 import logging
 from dataclasses import dataclass, field
-from typing import Optional
 
 # Importing necessary components
 from src.hybrid_retrieval.hybrid_retriever import HybridRetriever

@@ -29,7 +29,6 @@ async def upload_document(file: UploadFile = File(...)):
     Receives file, reads bytes, and triggers the ingestion service.
     Removed doc_id as it is not supported by the current service signature.
     """
-    global _ingestion_service
 
     if _ingestion_service is None:
         raise HTTPException(
@@ -57,7 +56,6 @@ async def upload_document(file: UploadFile = File(...)):
 @router.post("/ask")
 async def ask_question(request: QueryRequest):
     """Processes a RAG query using the synchronous pipeline in a threadpool."""
-    global _pipeline
 
     if _pipeline is None:
         raise HTTPException(
@@ -80,7 +78,6 @@ async def ask_question(request: QueryRequest):
 
 @router.get("/health", response_model=HealthResponse)
 async def health():
-    global _pipeline, _ingestion_service
     status = "ok" if _pipeline is not None else "degraded"
     vector_store_status = "initialized" if _pipeline is not None else "uninitialized"
     return {
@@ -100,7 +97,6 @@ async def ping():
 
 @router.get("/debug")
 async def debug():
-    global _pipeline, _ingestion_service
     return {
         "pipeline_initialized": _pipeline is not None,
         "ingestion_initialized": _ingestion_service is not None,

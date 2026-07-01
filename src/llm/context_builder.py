@@ -58,7 +58,7 @@ class ContextBuilder:
 
         logger.debug(
             f"Context built: {len(ranked_results)} -> {len(selected)} chunks "
-            f"({sum(len(c.get('content','')) for c in selected)} chars)"
+            f"({sum(len(c.get('content', '')) for c in selected)} chars)"
         )
         return ordered, citations
 
