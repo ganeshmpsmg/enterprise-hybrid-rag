@@ -4,6 +4,7 @@ import os
 import sys
 import tempfile
 from pathlib import Path
+
 import pytest
 
 # Add project root to path
@@ -19,8 +20,7 @@ os.environ.setdefault("EMBEDDING_MODEL", "sentence-transformers/all-MiniLM-L6-v2
 @pytest.fixture(scope="session")
 def sample_ml_text():
     """Sample ML document text for testing."""
-    return (
-        """
+    return """
     The Transformer model uses self-attention mechanisms to process sequences in parallel.
     Unlike RNNs which process tokens sequentially, transformers can attend to all positions simultaneously.
     Multi-head attention allows the model to jointly attend to information from different representation subspaces.
@@ -29,9 +29,7 @@ def sample_ml_text():
     The attention score is computed as: Attention(Q,K,V) = softmax(QK^T / sqrt(dk)) * V
     Gradient descent optimizes model parameters by computing gradients of the loss function.
     Batch normalization normalizes layer inputs to stabilize training and accelerate convergence.
-    """
-        * 10
-    )  # Repeat to get enough text for chunking tests
+    """ * 10  # Repeat to get enough text for chunking tests
 
 
 @pytest.fixture(scope="session")

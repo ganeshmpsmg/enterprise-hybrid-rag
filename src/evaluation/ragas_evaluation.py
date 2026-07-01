@@ -3,8 +3,8 @@ RAGAS Evaluation - Faithfulness, Answer Relevancy, and Context Precision.
 RAGAS (RAG Assessment) is the standard evaluation framework for RAG systems.
 """
 
-import logging
 import importlib.util
+import logging
 from dataclasses import dataclass
 from typing import Optional
 
@@ -71,9 +71,9 @@ class RAGASEvaluator:
         """Run official RAGAS evaluation."""
         try:
             # Local imports here ensure we only depend on RAGAS when necessary
-            from ragas import evaluate as ragas_evaluate
-            from ragas.metrics import faithfulness, answer_relevancy, context_precision
             from datasets import Dataset
+            from ragas import evaluate as ragas_evaluate
+            from ragas.metrics import answer_relevancy, context_precision, faithfulness
 
             data = {
                 "question": questions,

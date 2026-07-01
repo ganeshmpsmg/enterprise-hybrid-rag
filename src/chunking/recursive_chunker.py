@@ -5,6 +5,7 @@ Best general-purpose chunker: splits on paragraphs, then sentences, then words.
 
 import logging
 from typing import Optional
+
 from src.chunking.chunker import BaseChunker, Chunk
 
 logger = logging.getLogger(__name__)

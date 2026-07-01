@@ -4,8 +4,8 @@ import pytest
 
 from src.ingestion.data_validator import DocumentValidator
 from src.ingestion.file_manager import FileManager
-from src.preprocessing.text_cleaner import TextCleaner
 from src.preprocessing.normalizer import TextNormalizer
+from src.preprocessing.text_cleaner import TextCleaner
 
 
 @pytest.fixture

@@ -7,6 +7,7 @@ import logging
 import time
 from dataclasses import dataclass, field
 from typing import Optional
+
 import numpy as np
 
 from src.chunking.chunker import Chunk

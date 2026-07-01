@@ -5,7 +5,9 @@ Creates semantically coherent chunks by detecting topic shifts.
 
 import logging
 from typing import Optional
+
 import numpy as np
+
 from src.chunking.chunker import BaseChunker, Chunk
 
 logger = logging.getLogger(__name__)

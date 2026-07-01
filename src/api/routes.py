@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import os
-import asyncio
-from fastapi import APIRouter, HTTPException, UploadFile, File
-from starlette.concurrency import run_in_threadpool
+
+from fastapi import APIRouter, File, HTTPException, UploadFile
 from pydantic import BaseModel
+from starlette.concurrency import run_in_threadpool
 
 from src.api.schemas import HealthResponse
 

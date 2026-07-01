@@ -9,8 +9,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from src.evaluation.retrieval_metrics import evaluate_retrieval
 from src.evaluation.ragas_evaluation import RAGASEvaluator
+from src.evaluation.retrieval_metrics import evaluate_retrieval
 
 logger = logging.getLogger(__name__)
 

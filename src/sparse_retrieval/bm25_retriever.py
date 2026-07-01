@@ -5,6 +5,7 @@ BM25 is the gold standard for keyword-based document retrieval.
 
 import logging
 from typing import Optional
+
 import numpy as np
 
 logger = logging.getLogger(__name__)

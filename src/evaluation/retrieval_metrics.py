@@ -5,6 +5,7 @@ Retrieval Metrics - Precision@K, Recall@K, MRR, nDCG for RAG evaluation.
 import logging
 import math
 from typing import Optional
+
 import numpy as np
 
 logger = logging.getLogger(__name__)

@@ -13,8 +13,8 @@ from src.chunking.recursive_chunker import RecursiveChunker
 from src.ingestion.document_loader import DocumentLoader
 from src.preprocessing.metadata_extractor import MetadataExtractor
 from src.preprocessing.text_cleaner import TextCleaner
-from src.vectorstore.index_builder import IndexBuilder
 from src.sparse_retrieval.bm25_retriever import BM25Retriever
+from src.vectorstore.index_builder import IndexBuilder
 
 logger = logging.getLogger(__name__)
 

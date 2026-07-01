@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Optional
 
-from src.ingestion.pdf_loader import PDFLoader, PDFDocument
+from src.ingestion.pdf_loader import PDFDocument, PDFLoader
 
 logger = logging.getLogger(__name__)
 

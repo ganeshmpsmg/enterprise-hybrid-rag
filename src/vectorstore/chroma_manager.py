@@ -5,9 +5,10 @@ Best for: persistent storage, metadata filtering, easy setup.
 
 import logging
 from typing import Optional
+
 import numpy as np
 
-from src.vectorstore.vector_store import VectorStore, SearchResult
+from src.vectorstore.vector_store import SearchResult, VectorStore
 
 logger = logging.getLogger(__name__)
 

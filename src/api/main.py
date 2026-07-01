@@ -15,13 +15,13 @@ except ModuleNotFoundError:
         return False
 
 
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
+import src.api.routes as route_module
 from src.api.middleware import RateLimitMiddleware, RequestLoggingMiddleware
 from src.api.routes import router
-import src.api.routes as route_module
 
 load_dotenv()
 logging.basicConfig(level=logging.INFO)
@@ -101,21 +101,21 @@ def create_app() -> FastAPI:
 
 async def _initialize_pipeline():
     """Wire up all pipeline dependencies."""
+    from src.dense_retrieval.dense_retriever import DenseRetriever
     from src.embeddings.embedding_model import EmbeddingModel
     from src.embeddings.embedding_pipeline import EmbeddingPipeline
-    from src.vectorstore.chroma_manager import ChromaManager
-    from src.vectorstore.faiss_manager import FAISSManager
-    from src.dense_retrieval.dense_retriever import DenseRetriever
-    from src.sparse_retrieval.bm25_retriever import BM25Retriever
     from src.hybrid_retrieval.hybrid_retriever import HybridRetriever
     from src.hybrid_retrieval.query_expander import QueryExpander
-    from src.reranker.reranker import Reranker
-    from src.reranker.ranking_pipeline import RankingPipeline
-    from src.llm.llm_service import LLMService
     from src.llm.answer_generator import AnswerGenerator
+    from src.llm.llm_service import LLMService
     from src.llm.rag_pipeline import RAGPipeline
-    from src.vectorstore.index_builder import IndexBuilder
+    from src.reranker.ranking_pipeline import RankingPipeline
+    from src.reranker.reranker import Reranker
+    from src.sparse_retrieval.bm25_retriever import BM25Retriever
     from src.utils.ingestion_service import IngestionService
+    from src.vectorstore.chroma_manager import ChromaManager
+    from src.vectorstore.faiss_manager import FAISSManager
+    from src.vectorstore.index_builder import IndexBuilder
 
     # 1. Initialize Core Models
     embed_model = EmbeddingModel(

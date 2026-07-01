@@ -5,6 +5,7 @@ Extends dense retrieval with Maximal Marginal Relevance for diversity.
 
 import logging
 from typing import Optional
+
 import numpy as np
 
 from src.dense_retrieval.dense_retriever import DenseRetriever

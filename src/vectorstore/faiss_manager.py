@@ -8,9 +8,10 @@ import os
 import pickle
 from pathlib import Path
 from typing import Optional
+
 import numpy as np
 
-from src.vectorstore.vector_store import VectorStore, SearchResult
+from src.vectorstore.vector_store import SearchResult, VectorStore
 
 logger = logging.getLogger(__name__)
 

@@ -37,12 +37,14 @@ def http_get_with_retry(url: str, retries: int = 3, delay: float = 1.0, timeout:
 
 
 def http_post_with_retry(url: str, json=None, files=None, retries: int = 3, delay: float = 2.0, timeout: int = 60):
-    """POST with retries on exceptions or 5xx responses."""
+    """POST with retries on exceptions or transient 5xx responses."""
     import time
     last_exc = None
     for attempt in range(1, retries + 1):
         try:
             resp = requests.post(url, json=json, files=files, timeout=timeout)
+            if resp.status_code == 429:
+                return resp
             if 500 <= resp.status_code < 600 and attempt < retries:
                 time.sleep(delay * attempt)
                 continue

@@ -5,6 +5,7 @@ Acts as a wrapper/decorator over other chunkers to enrich chunk metadata.
 
 import logging
 from typing import Optional
+
 from src.chunking.chunker import BaseChunker, Chunk
 from src.chunking.recursive_chunker import RecursiveChunker
 

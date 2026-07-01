@@ -8,7 +8,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Optional
 
-from src.hybrid_retrieval.hybrid_retriever import HybridRetriever, HybridResult
+from src.hybrid_retrieval.hybrid_retriever import HybridResult, HybridRetriever
 
 logger = logging.getLogger(__name__)
 

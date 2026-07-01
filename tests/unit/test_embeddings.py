@@ -1,8 +1,9 @@
 """Tests for embedding model and pipeline."""
 
+from unittest.mock import MagicMock, patch
+
 import numpy as np
 import pytest
-from unittest.mock import MagicMock, patch
 
 
 class TestEmbeddingModel:

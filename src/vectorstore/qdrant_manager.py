@@ -6,9 +6,10 @@ Best for: production deployments, complex filters, scalability, deletions.
 import logging
 import uuid
 from typing import Optional
+
 import numpy as np
 
-from src.vectorstore.vector_store import VectorStore, SearchResult
+from src.vectorstore.vector_store import SearchResult, VectorStore
 
 logger = logging.getLogger(__name__)
 
@@ -60,11 +61,7 @@ class QdrantManager(VectorStore):
 
     def _ensure_collection(self):
         """Create collection if it doesn't exist."""
-        from qdrant_client.models import (
-            Distance,
-            VectorParams,
-            OptimizersConfigDiff,
-        )
+        from qdrant_client.models import Distance, OptimizersConfigDiff, VectorParams
 
         dist_map = {
             "Cosine": Distance.COSINE,
@@ -144,7 +141,7 @@ class QdrantManager(VectorStore):
         filter_metadata: Optional[dict] = None,
     ) -> list[SearchResult]:
         """Search Qdrant with optional payload filtering."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
         query_filter = None
         if filter_metadata:
@@ -184,7 +181,7 @@ class QdrantManager(VectorStore):
 
     def delete_by_doc_id(self, doc_id: str) -> int:
         """Delete all points with matching doc_id payload field."""
-        from qdrant_client.models import Filter, FieldCondition, MatchValue
+        from qdrant_client.models import FieldCondition, Filter, MatchValue
 
         try:
             result = self.client.delete(

@@ -4,6 +4,7 @@ Cosine similarity, normalization, dimensionality reduction, etc.
 """
 
 import logging
+
 import numpy as np
 
 logger = logging.getLogger(__name__)

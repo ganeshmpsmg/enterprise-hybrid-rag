@@ -8,7 +8,7 @@ import time
 from typing import Optional
 
 from src.embeddings.embedding_pipeline import EmbeddingPipeline
-from src.vectorstore.vector_store import VectorStore, SearchResult
+from src.vectorstore.vector_store import SearchResult, VectorStore
 
 logger = logging.getLogger(__name__)
 

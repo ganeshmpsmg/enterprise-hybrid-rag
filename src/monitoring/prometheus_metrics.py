@@ -10,12 +10,12 @@ logger = logging.getLogger(__name__)
 try:
     # Removed unused 'Summary' import to fix F401 error
     from prometheus_client import (
+        CONTENT_TYPE_LATEST,
+        REGISTRY,
         Counter,
         Gauge,
         Histogram,
-        REGISTRY,
         generate_latest,
-        CONTENT_TYPE_LATEST,
     )
 
     PROMETHEUS_AVAILABLE = True
