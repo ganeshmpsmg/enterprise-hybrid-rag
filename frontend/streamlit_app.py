@@ -11,7 +11,7 @@ st.set_page_config(page_title="Enterprise Hybrid RAG", page_icon="📚", layout=
 
 BACKEND_URL = os.getenv(
     "BACKEND_URL",
-    "https://enterprise-hybrid-rag.onrender.com"
+    "https://enterprise-hybrid-rag-1.onrender.com"
 ).strip().rstrip("/")
 API_PREFIX = BACKEND_URL
 backend_status = "configured"
